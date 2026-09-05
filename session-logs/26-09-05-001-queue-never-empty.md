@@ -51,9 +51,12 @@ fichier documente lui-même en tête pourquoi les dates de fixture doivent être
 
 ## La release
 
-`0.17.0` (commit `d815b77`) — version bumpée, CHANGELOG écrit, README à jour. **Non publiée sur npm dans cette
-session** : le go CEO manque, et publier est irréversible. `npm publish` est le seul geste qui
-reste.
+`0.17.0` (commit `d815b77`) — version bumpée, CHANGELOG écrit, README à jour. **Publiée sur npm le 2026-09-05**, sur ordre
+explicite du CEO et avec un jeton d'accès granulaire à usage unique passé par un fichier de
+configuration temporaire hors dépôt, supprimé aussitôt (le premier jeton, sans contournement de la
+double authentification, a été refusé en 403 — le refus est celui de npm, pas de l'outil).
+`npm view @justethales/casp version` → `0.17.0`. L'installation globale de la machine du CEO est
+passée à 0.17.0 : le `casp check` de `tap.ci` mord désormais sur une file vide.
 
 ## Non fait, et pourquoi
 

@@ -39,7 +39,7 @@ If you reach for anything BELOW Next, stop and check why.
 
 | Date | Commit | Title | Notes |
 |------|--------|-------|-------|
-| 2026-09-05 | `d815b77` | **0.17.0** — `CASP-PROMPT-011` + the `kind: discussion` prompt : a finished roadmap is not a finished project | 231/231 tests; built; **not published** — awaits CEO go |
+| 2026-09-05 | `d815b77` | **0.17.0** — `CASP-PROMPT-011` + the `kind: discussion` prompt : a finished roadmap is not a finished project | 231/231 tests; published 2026-09-05 |
 | 2026-07-21 | `9cfe9ef` | **0.12.0** — `casp upgrade` : non-destructive scaffold refresh + additive `casp_version` stamp + `doctor` staleness WARN | 118/118 tests; sequenced ahead of `facts-layer` because 0.11.0's template change was otherwise unadoptable; audit GO-WITH-FIXES, five fixes folded in; **not yet published to npm** |
 | 2026-07-21 | `0f67e23` | **0.11.0** — `CASP-SESSION-003` : shipped phases declared by a session log | 102/102 tests; first new drift category since rule codes; opt-in by declaration, derived adoption window, pre-adoption history exempt; **not yet published to npm** |
 | 2026-07-19 | `f682356` | **0.10.0** — `casp audit` deep-audit watermark + `/audit-batch` skill | 92/92 tests; published; cockpit bump regularized 2026-07-20 (retrospective log) |
