@@ -87,6 +87,15 @@ you use next month.
 > that. CASP is what makes the handoff worth trusting, not an orchestrator. It proves the
 > plan is *executable*; it never decides what the plan should be.
 
+**And the queue never ends — it changes kind.** The day the last slice ships, the roadmap is
+implemented and the project is not finished: how does it get known, what does it cost, who
+answers the first hundred users, what is the next roadmap. Each of those is a **decision** before
+it is code, and a decision is a session too. So a cockpit that has shipped is never allowed to
+report nothing to start (`CASP-PROMPT-011`); what it queues instead is a **discussion prompt** —
+`casp new discussion --slug after-the-roadmap` — a session with the human whose deliverable is
+decisions written down and the prompts they produce. `casp next` announces the kind, so no
+headless loop runs a conversation.
+
 ---
 
 ### 3 · The plan is checked as a plan, not just as a list
@@ -106,6 +115,7 @@ or a cycle no linear order can satisfy.
 | `CASP-PROMPT-008` | A cycle — A after B, B after A — that no linear execution can satisfy |
 | `CASP-PROMPT-009` | Two queued prompts claiming the same predecessor, so the order has two answers *(warn)* |
 | `CASP-PROMPT-010` | A queued prompt no chain reaches, which will simply never run *(warn)* |
+| `CASP-PROMPT-011` | A cockpit that has **shipped** and reports nothing to start — a finished roadmap is not a finished project; what follows is a **discussion prompt** |
 | `CASP-SESSION-003` | A phase on the shipped scoreboard that no session log declares |
 
 The severity split is deliberate: a dangling reference and a cycle are claims that
@@ -490,6 +500,7 @@ the full definition. Among others:
 - `CASP-STATE-003` — `phases_shipped[]` has duplicates.
 - `CASP-MIGRATION-002` — `migrations_applied[]` does not match the migrations directory.
 - `CASP-PROMPT-005` — a session prompt is `status: shipped` but its `session_log` is missing.
+- `CASP-PROMPT-011` — the cockpit has shipped and `next_prompt` is empty over an empty queue. *(A finished roadmap is not a finished project: queue a `kind: discussion` prompt.)*
 - `CASP-WORKTREE-001` — uncommitted changes in `casp/`, the sessions dir, or the logs dir.
 - `CASP-IO-001` — a file the gate had to read could not be opened (mode `000`, a directory squatting a `*.md` path, a symlink cycle). *(A gate that crashes is not a verdict: the run completes, `--json` still parses, and the finding names the path and the reason.)*
 
@@ -544,6 +555,8 @@ and roll-ups. See [docs/check-json.md](https://github.com/ThalesGnimavo/casp/blo
 - **0.13** — `CASP-PROMPT-007` … `010`: prompt-chain integrity — a `next_after`-declared queue is checked as an ordered, executable plan. `casp status --json` gains the resolved `queue`. *Shipped.*
 - **0.14** — The facts layer: `casp/facts.json` (opt-in) declares claims verified once and kept fresh by comparing a source hash and a TTL, never by a model reading prose — plus a static trap registry for known false-measurement patterns, and compare-and-swap on every `state.json` write so two agents racing the same cockpit get an honest refusal instead of a silent clobber. *Shipped.*
 - **0.15** — `casp live`: the in-flight record beside the durable one. Advisory path claims with a TTL and a holder-liveness probe, an append-only journal fed by harness lifecycle hooks, a `PreToolUse` guard that refuses a write onto a living foreign claim, and `casp live watch` for the human. Fail-open by contract, self-gitignored, and walled off from the gate — `check` never reads it. *Shipped.*
+- **0.16** — `fleet`, distributed by casp and **not part of CASP**: a fourth Claude Code skill for parallel sessions on one repository — one writer plus N adversarial read-only reviewers, contradiction rather than speed, gate isolability as a per-project property to measure, commits by pathspec. No `casp check` rule reads it. *Shipped.*
+- **0.17** — `CASP-PROMPT-011` and the **discussion prompt**: a cockpit that has shipped never reports nothing to start. `casp new discussion --slug <slug>` scaffolds a `kind: discussion` prompt — a session with the human whose deliverable is decisions (distribution, pricing, support, the next roadmap) and the prompts they produce; `casp next` announces the kind. Exempt while nothing has shipped, so `init` stays green. *Shipped.*
 - **Demand-gated** — native binaries, a narrow `casp rollback` (state mutation only, never code), a CI status-check installer, a generic webhook notifier (user-owned outbound, off by default).
 
 Cut from earlier drafts, deliberately: `casp lint` (an LLM verb inside the CASP binary —

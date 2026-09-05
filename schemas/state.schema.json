@@ -38,11 +38,11 @@
     },
     "next_phase": {
       "type": ["string", "null"],
-      "description": "The next phase to ship, or null when parked (launch hold, roadmap complete)."
+      "description": "The next phase to ship, or null only while nothing has shipped yet. Once phases_shipped is non-empty an empty value is drift (CASP-PROMPT-011): a finished roadmap queues a discussion prompt."
     },
     "next_prompt": {
       "type": ["string", "null"],
-      "description": "Repo-relative path to the next session prompt, or null when parked. Must exist and must not already be status: shipped."
+      "description": "Repo-relative path to the next session prompt (a slice, or a kind: discussion prompt once the roadmap is implemented). Must exist and must not already be status: shipped. null is tolerated only while phases_shipped is empty (CASP-PROMPT-011)."
     },
     "phases_shipped": {
       "type": "array",

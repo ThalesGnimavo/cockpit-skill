@@ -83,6 +83,12 @@ When the roadmap Next-1 names a prompt file that exists and has `status: queued`
 
 When no clear next-prompt can be derived, surface the Next-3 from `roadmap.md` and ask the user which to start. Don't guess.
 
+**If `phases_shipped` is non-empty, an empty `next_prompt` is drift, not rest** (`CASP-PROMPT-011`, 0.17). Run `casp check` and say so. The fix is never to invent a slice: a finished roadmap owes decisions — distribution, pricing, support, the next roadmap — and a decision is a session too. Scaffold it with `casp new discussion --slug <slug>`, list the decisions with one question and one recommendation each, point `next_prompt` at it, and stop: the human fills the questions in.
+
+### A `kind: discussion` prompt at the head
+
+`casp next` announces it on stderr. This session is a **conversation**, not a build: re-verify every deferred item the prompt lists against the code (some may have shipped), take a position on every decision before asking, record each decision with the reason that decided it, draft the prompt(s) the decisions produce and chain them with `next_after`. **Write no product code.** Never run this prompt headless.
+
 ### Path C — no casp state at all
 
 ```bash

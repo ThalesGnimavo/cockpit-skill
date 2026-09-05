@@ -1,5 +1,8 @@
 /**
- * `casp new prompt|log --slug <kebab-id>` — copy a template, interpolate.
+ * `casp new prompt|discussion|log --slug <kebab-id>` — copy a template, interpolate.
+ *
+ * `discussion` scaffolds a prompt whose session is a conversation with the human, not
+ * code: the file the CASP-PROMPT-011 remediation asks for once a roadmap is done.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -40,9 +43,9 @@ function getArg(args: string[], flag: string): string | undefined {
 
 export function runNew(args: string[]): void {
   const [kind, ...rest] = args;
-  if (kind !== 'prompt' && kind !== 'log') {
+  if (kind !== 'prompt' && kind !== 'discussion' && kind !== 'log') {
     console.error(c.red(`unknown new kind: ${kind}`));
-    console.error(c.gray('  → use `casp new prompt --slug X` or `casp new log --slug X`'));
+    console.error(c.gray('  → use `casp new prompt --slug X`, `casp new discussion --slug X` or `casp new log --slug X`'));
     exit(1);
   }
   const slug = getArg(rest, '--slug');
@@ -61,16 +64,20 @@ export function runNew(args: string[]): void {
   // to the defaults (including the pre-init case where there is no state yet).
   const dirs = resolveDirs(root, loadState(join(root, 'casp', 'state.json')) ?? {});
 
-  if (kind === 'prompt') {
+  if (kind === 'prompt' || kind === 'discussion') {
     const dir = dirs.sessionsAbs;
     mkdirSync(dir, { recursive: true });
-    const filename = `${slug.toUpperCase().replace(/-/g, '-')}.md`;
+    const upper = slug.toUpperCase();
+    // A discussion prompt is named for what it is: the sessions dir reads as a
+    // plan, and a human must see at a glance which entries need a human.
+    const filename =
+      kind === 'discussion' && !upper.startsWith('DISCUSSION-') ? `DISCUSSION-${upper}.md` : `${upper}.md`;
     const dest = join(dir, filename);
     if (existsSync(dest)) {
       console.error(c.red(`already exists: ${relative(root, dest)}`));
       exit(1);
     }
-    const src = join(TEMPLATES, 'session-prompt.md');
+    const src = join(TEMPLATES, kind === 'discussion' ? 'discussion-prompt.md' : 'session-prompt.md');
     const raw = readFileSync(src, 'utf8');
     const out = raw
       .split('YYYY-MM-DD').join(today)
@@ -78,7 +85,11 @@ export function runNew(args: string[]): void {
     writeFileSync(dest, out);
     console.log(`${c.green('write')}   ${relative(root, dest)}`);
     console.log('');
-    console.log(c.gray('next: edit the prompt to fill the <placeholders>'));
+    if (kind === 'discussion') {
+      console.log(c.gray('next: list the decisions the human must take — one question, one recommendation each'));
+    } else {
+      console.log(c.gray('next: edit the prompt to fill the <placeholders>'));
+    }
     console.log(c.gray('      then update casp/state.json next_prompt to point at this file'));
     return;
   }

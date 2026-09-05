@@ -41,6 +41,7 @@ not verify that your code is correct, deployed, or bug-free. See
 | `CASP-PROMPT-008` | PROMPT | The next_after chain is acyclic |
 | `CASP-PROMPT-009` | PROMPT | No two queued prompts claim the same predecessor |
 | `CASP-PROMPT-010` | PROMPT | Every chained queued prompt is reachable from next_prompt |
+| `CASP-PROMPT-011` | PROMPT | A cockpit that has shipped never reports nothing to start |
 | `CASP-SESSION-001` | SESSION | last_session_id maps to a session log |
 | `CASP-SESSION-002` | SESSION | Shipped history directories exist |
 | `CASP-SESSION-003` | SESSION | Shipped phases are declared by a session log |
@@ -82,6 +83,14 @@ read, so adding them could not redden a cockpit that had not opted in:
   so an unedited placeholder, an empty value and `null` are not declarations.
 - `CASP-FACT-001` … `CASP-FACT-006` read `casp/facts.json`. No such file → no
   finding at all, not even a PASS. See [the facts layer](#the-facts-layer) below.
+- `CASP-PROMPT-011` reads `phases_shipped`. Nothing shipped → no finding: a cockpit
+  that has not started is not one that has finished. Once anything has shipped, an
+  empty `next_prompt` over an empty queue is a FAIL — **a finished roadmap is not a
+  finished project.** Distribution, pricing, support, the next roadmap: each is a
+  decision before it is code, and a decision is a session too. The remediation is a
+  **discussion prompt** (`casp new discussion --slug <slug>`, frontmatter
+  `kind: discussion`) whose deliverable is written decisions and the prompts they
+  produce. `casp next` announces the kind so nobody runs it headless.
 
 Adoption is derived from the data in all three cases — there is no state key to
 set and nothing to configure.

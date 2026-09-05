@@ -1,6 +1,6 @@
 {
   "name": "@justethales/casp",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Your agent says the phase shipped; git says it didn't. CASP validates a project's recorded state against git and blocks the push on drift. Deterministic, local-only, zero telemetry. Works with Claude Code, Cursor, Aider.",
   "type": "module",
   "license": "MIT",

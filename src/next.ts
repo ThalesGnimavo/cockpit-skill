@@ -124,7 +124,14 @@ export function runNext(args: string[]): void {
   }
 
   // Header to stderr (human context), prompt body to stdout (pipe-friendly).
-  console.error(c.bold(`next prompt`) + ` · ${c.cyan(nextPrompt)} · status ${c.green(status)}`);
+  const kind = fm ? String(fm.kind ?? 'session') : 'session';
+  console.error(c.bold(`next prompt`) + ` · ${c.cyan(nextPrompt)} · status ${c.green(status)}` + (kind !== 'session' ? ` · kind ${c.yellow(kind)}` : ''));
+  if (kind === 'discussion') {
+    // The head of the queue is a conversation, not a build. Say so before the
+    // body, on stderr, so a headless loop reading stdout still gets the prompt
+    // and the human reading the terminal gets the warning first.
+    console.error(c.yellow('this prompt is a DISCUSSION: its deliverable is decisions written down with the human, and the prompts they produce — not code. Do not run it headless.'));
+  }
   console.error(c.gray('─'.repeat(70)));
   const body = readTextFile(path);
   if (!body.ok) {

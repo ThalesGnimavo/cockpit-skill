@@ -289,12 +289,75 @@ test('next_prompt: null while phases are queued → FAIL (parked must be true)',
   }
 });
 
-test('next_prompt: null with an empty queue stays a legitimate park', () => {
-  const { dir } = scaffold({ next_prompt: null, next_phase: null, phases_queued: [] });
+test('next_prompt: null with an empty queue stays a legitimate park — while nothing has shipped', () => {
+  const { dir } = scaffold({ next_prompt: null, next_phase: null, phases_queued: [], phases_shipped: [] });
   try {
     const report = JSON.parse(run(dir, 'check', '--json').stdout);
     const f = report.findings.find((x) => x.id === 'next_prompt.parked_while_queued');
     assert.ok(f && f.severity === 'pass', 'parking is legal — it just has to be honest');
+    // Not started is not finished: the never-empty rule stays silent on a fresh cockpit.
+    assert.equal(report.findings.find((x) => x.id === 'next_prompt.never_empty_after_shipping'), undefined);
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('next_prompt: null, empty queue, but phases HAVE shipped → FAIL CASP-PROMPT-011', () => {
+  const { dir } = scaffold({
+    next_prompt: null,
+    next_phase: null,
+    phases_queued: [],
+    phases_shipped: ['phase-1-first-slice']
+  });
+  try {
+    const r = run(dir, 'check', '--json');
+    assert.equal(r.status, 1, 'a finished roadmap is not a finished project');
+    const report = JSON.parse(r.stdout);
+    const f = report.findings.find((x) => x.id === 'next_prompt.never_empty_after_shipping');
+    assert.ok(f && f.severity === 'fail');
+    assert.equal(f.rule, 'CASP-PROMPT-011');
+    assert.match(f.fix, /discussion/i, `the remediation names the discussion prompt: ${f.fix}`);
+    assert.match(f.detail, /1/, `the finding reports how much has shipped: ${f.detail}`);
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('a queued discussion prompt at the head satisfies the never-empty rule, and `casp next` announces its kind', () => {
+  const { dir } = scaffold({
+    next_prompt: 'docs/plan/sessions/DISCUSSION-AFTER-THE-ROADMAP.md',
+    next_phase: 'discussion-after-the-roadmap',
+    phases_queued: ['discussion-after-the-roadmap'],
+    phases_shipped: ['phase-1-first-slice']
+  });
+  try {
+    writeFileSync(
+      join(dir, 'docs', 'plan', 'sessions', 'DISCUSSION-AFTER-THE-ROADMAP.md'),
+      '---\nstatus: queued\nkind: discussion\nsession_id: pending\nsession_log: pending\ndrafted_at: 2026-06-15\n---\n\n# Discussion — after the roadmap\n'
+    );
+    const report = JSON.parse(run(dir, 'check', '--json').stdout);
+    const f = report.findings.find((x) => x.id === 'next_prompt.never_empty_after_shipping');
+    assert.ok(f && f.severity === 'pass', 'a discussion prompt is something to start');
+    const n = run(dir, 'next', '--no-check');
+    assert.equal(n.status, 0);
+    assert.match(n.stderr, /DISCUSSION/, 'the human is told the head of the queue is a conversation');
+    assert.match(n.stderr, /kind/);
+    assert.match(n.stdout, /after the roadmap/);
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('`casp new discussion` scaffolds a kind: discussion prompt named DISCUSSION-<SLUG>', () => {
+  const { dir } = scaffold({});
+  try {
+    const r = run(dir, 'new', 'discussion', '--slug', 'after-the-roadmap');
+    assert.equal(r.status, 0, r.stderr);
+    const file = join(dir, 'docs', 'plan', 'sessions', 'DISCUSSION-AFTER-THE-ROADMAP.md');
+    const body = readFileSync(file, 'utf8');
+    assert.match(body, /^kind: discussion$/m);
+    assert.match(body, /^status: queued$/m);
+    assert.match(body, /CASP-PROMPT-011/);
   } finally {
     cleanup(dir);
   }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.17.0 — 2026-09-05
+
+**A finished roadmap is not a finished project.** Until now a cockpit whose last slice had shipped could set `next_prompt: null` over an empty queue and pass the gate as "genuinely parked" — and the next session opened on a blank. The blank was a lie of omission: what follows an implemented roadmap is distribution, pricing, support, the next roadmap — each a **decision** before it is code, and a decision is a session too.
+
+- **New rule — `CASP-PROMPT-011`, "a cockpit that has shipped never reports nothing to start".** FAIL when `phases_shipped` is non-empty, `phases_queued` is empty and `next_prompt` is empty. The exemption is deliberate and tested: a cockpit that has shipped nothing is *not started*, not *finished* — `casp init` stays green out of the box and the fresh-null-pointer case keeps passing. `CASP-PROMPT-005` (parked while queued) is unchanged.
+- **New prompt kind — `kind: discussion`.** `casp new discussion --slug <slug>` scaffolds `DISCUSSION-<SLUG>.md` from a new template (`templates/templates/discussion-prompt.md`, delivered to existing cockpits by `casp upgrade`): a session with the human whose deliverable is **decisions written down** — one question, one recommendation each — and the prompts they produce. No code. The template names the four decisions every finished roadmap owes (next roadmap, distribution, pricing, support) and leaves room for the project's own.
+- **`casp next` announces the kind.** On a `kind: discussion` head it prints, on stderr before the body, that the prompt needs the human and must not run headless. stdout is unchanged, so pipes keep working.
+- **Schema descriptions** for `next_phase` / `next_prompt` no longer describe `null` as "parked (roadmap complete)": a complete roadmap is exactly when the pointer must not be empty.
+- **Test rot fixed.** `casp fact list` asserted `fresh: true` on a fact hard-coded as verified on 2026-07-20 with a 30-day TTL; it started failing on 2026-08-20 on every clock. The fact is now verified "today". 231 → 235 tests.
+- **Skills.** `/next` treats an empty pointer on a cockpit that has shipped as drift (`casp check`, then a discussion prompt), and runs a `kind: discussion` head as a conversation: positions first, decisions recorded, prompts drafted, no product code.
+
 ## 0.16.0 — 2026-08-17
 
 **The `fleet` skill ships in the package — and is not CASP.** Parallel agent sessions on one repository are where state drift hurts most, so the package now distributes a fourth Claude Code skill, `skills/fleet`, alongside `/casp`, `/next` and `/audit-batch` — none of which are protocol verbs either. The boundary is stated everywhere the skill is mentioned, and each claim is testable: **fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature**; no `casp check` rule reads it and nothing in it gates a push; and **its model default is empty** — the reasoning ships (a controller and its workers do not need to run at the same tier), a model name never does, because naming one contradicts a model-agnostic tool and dates the file at the next release.

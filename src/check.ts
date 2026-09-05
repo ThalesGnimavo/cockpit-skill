@@ -287,6 +287,39 @@ export function checkOne(root: string, opts: { noGit?: boolean } = {}): Finding[
         ''
       );
     }
+
+    /* 1c. a cockpit that has shipped never reports nothing to start ------- */
+
+    // The failure this closes: the roadmap is fully implemented, the queue is
+    // empty, the pointer is null, the gate says PASS — and the next session
+    // opens on a blank. But a finished roadmap is not a finished project:
+    // distribution, pricing, support, the next roadmap all remain, and each of
+    // them is a DECISION before it is code. A decision is a session too: a
+    // discussion prompt (frontmatter `kind: discussion`) whose deliverable is
+    // written decisions and the prompts they produce. So once anything has
+    // shipped, an empty pointer is drift, not rest.
+    //
+    // The exemption is deliberate: a cockpit that has shipped nothing is "not
+    // started", not "finished" — `casp init` stays green out of the box, and a
+    // fresh state with an honest null pointer keeps passing.
+    const shipped = Array.isArray(state.phases_shipped) ? state.phases_shipped : [];
+    if (pointerEmpty && queued.length === 0 && shipped.length > 0) {
+      record(
+        'next_prompt.never_empty_after_shipping',
+        'fail',
+        'the cockpit has shipped and reports nothing to start',
+        `next_prompt is empty, the queue is empty, and phases_shipped holds ${shipped.length}: a finished roadmap is not a finished project`,
+        'queue a DISCUSSION prompt (`casp new discussion --slug <slug>`): what comes after the roadmap — distribution, pricing, support, the next roadmap — is a decision to obtain from the human, and a decision is a session. Point next_prompt at it.',
+        { expected: 'a path to a queued prompt (kind: discussion when the roadmap is done)', actual: JSON.stringify(state.next_prompt ?? null) }
+      );
+    } else if (shipped.length > 0) {
+      record(
+        'next_prompt.never_empty_after_shipping',
+        'pass',
+        'the cockpit has shipped and still names something to start',
+        ''
+      );
+    }
   }
 
   /* 2. next_prompt resolves --------------------------------------------- */

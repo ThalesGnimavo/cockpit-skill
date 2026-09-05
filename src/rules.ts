@@ -182,6 +182,17 @@ export const RULES: Rule[] = [
     matches: (id) => id.startsWith('prompt_chain.orphan.')
   },
   {
+    code: 'CASP-PROMPT-011',
+    title: 'A cockpit that has shipped never reports nothing to start',
+    area: 'PROMPT',
+    verifies:
+      'When phases_shipped is non-empty, next_prompt is never empty/null — even with an empty queue. A finished roadmap is not a finished project: distribution, pricing, support, the next roadmap. What follows is a decision, and a decision is a session too — a DISCUSSION prompt (frontmatter kind: discussion) whose deliverable is written decisions and the prompts they produce, not code. A cockpit that has shipped nothing yet is exempt: not started is not finished.',
+    evidence: 'state.next_prompt compared against state.phases_shipped and state.phases_queued.',
+    remediation:
+      'Queue a discussion prompt (`casp new discussion --slug <slug>`), fill the decisions it must obtain from the human, and point next_prompt at it. Never null next_prompt on a cockpit that has shipped.',
+    matches: (id) => id === 'next_prompt.never_empty_after_shipping'
+  },
+  {
     code: 'CASP-SESSION-001',
     title: 'last_session_id maps to a session log',
     area: 'SESSION',

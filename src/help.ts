@@ -118,15 +118,22 @@ const COMMANDS: CmdHelp[] = [
   },
   {
     name: 'new',
-    summary: 'Copy a session prompt or log template into place',
+    summary: 'Copy a session prompt, a discussion prompt or a log template into place',
     blurb:
-      'Scaffolds a new session prompt or log from the template, into the ' +
+      'Scaffolds a new session prompt, discussion prompt or log from the template, into the ' +
       'configured sessions_dir / logs_dir (defaults docs/plan/sessions and ' +
-      'session-logs).',
-    usage: ['casp new prompt --slug <kebab-id>', 'casp new log --slug <kebab-id>'],
+      'session-logs). A discussion prompt (frontmatter kind: discussion) is a session with the ' +
+      'human whose deliverable is decisions, not code — what a cockpit queues once its roadmap ' +
+      'is implemented (CASP-PROMPT-011).',
+    usage: [
+      'casp new prompt --slug <kebab-id>',
+      'casp new discussion --slug <kebab-id>',
+      'casp new log --slug <kebab-id>'
+    ],
     flags: [['--slug <kebab-id>', 'The phase / log identifier (required)']],
     examples: [
       ['casp new prompt --slug phase-2-auth-flow', 'draft the next prompt'],
+      ['casp new discussion --slug after-the-roadmap', 'queue the decisions that follow a finished roadmap'],
       ['casp new log --slug phase-2-auth-flow', "this session's log"]
     ]
   },
@@ -431,6 +438,8 @@ COMMANDS
                                   then run check (no git)
   new prompt --slug <kebab-id>  Copy session-prompt template to the sessions dir
                                   (default docs/plan/sessions; set sessions_dir to override)
+  new discussion --slug <id>    Copy discussion-prompt template to the sessions dir
+                                  (a session with the human: decisions, not code)
   new log --slug <kebab-id>     Copy session-log template to the logs dir
                                   (default session-logs; set logs_dir to override)
   install-hook                  Write .git/hooks/pre-push so casp check runs on

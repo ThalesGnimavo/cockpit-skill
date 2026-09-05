@@ -355,7 +355,9 @@ test('casp fact list: prints inventory, --json is machine-readable', () => {
   const dir = scaffold();
   try {
     writeFacts(dir, [
-      { id: 'a', value: '1', source: 'external:x', verified_at: '2026-07-20', ttl_days: 30 }
+      // Verified TODAY, not on a fixed date: `fresh` is computed against the wall clock,
+      // and a hard-coded 2026-07-20 made this assertion rot 30 days later.
+      { id: 'a', value: '1', source: 'external:x', verified_at: isoDaysAgo(0), ttl_days: 30 }
     ]);
     commit(dir, 'one fact');
     const human = run(dir, 'fact', 'list');
