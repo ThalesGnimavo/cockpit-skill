@@ -1,16 +1,16 @@
 {
-  "updated_at": "2026-08-17",
-  "last_session_id": "26-08-17-001-fleet-ships-with-casp",
-  "last_commit": "f0dfa79",
-  "current_phase": "fleet-ships-with-casp",
+  "updated_at": "2026-09-05",
+  "last_session_id": "26-09-05-001-queue-never-empty",
+  "last_commit": "d815b77",
+  "current_phase": "queue-never-empty",
   "next_phase": "demand-gated-tail",
   "next_prompt": "docs/plan/sessions/PHASE-DEMAND-GATED-TAIL.md",
   "arbitration": {
-    "phase": "fleet-ships-with-casp",
+    "phase": "queue-never-empty",
     "shape": "solo",
-    "decided_at": "2026-08-17",
-    "by": "26-08-17-001",
-    "reason": "internally coupled slice -- one boundary statement across three files, no second writing lane; adversarial review covered by the pre-commit read-only audit; the npm publish is inside this session's explicit scope"
+    "decided_at": "2026-09-05",
+    "by": "26-09-05-001",
+    "reason": "one rule, one template, one banner and their docs: a single coupled surface with no second writing lane; the CEO request itself is the arbitration"
   },
   "phases_shipped": [
     "0.1.0-initial-release",
@@ -51,12 +51,13 @@
     "live-coordination-layer",
     "live-review-and-release",
     "unarmed-is-not-silent",
-    "fleet-ships-with-casp"
+    "fleet-ships-with-casp",
+    "queue-never-empty"
   ],
   "phases_queued": [
     "demand-gated-tail"
   ],
   "phases_backlog": [],
   "notes": "0.16.0 is PUBLISHED -- npm dist-tags.latest is 0.16.0, shasum 4c0555a4a8fd95e42d8b09292e351037b64eabbb, 42 files. What it ships: the fleet skill (skills/fleet/SKILL.md), a public rewrite distilled from three measured multi-session trials -- default shape one writer plus N adversarial read-only reviewers, the measured value is contradiction not speed, gates-isolable-per-session is a per-project property to measure before launching, commit by pathspec, stale belief is the dominant failure mode. The boundary is stated and mechanically tested: fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature; no casp check rule reads it; its model default is empty. Launcher decision: skill only, no launch script ships (reason in CHANGELOG). Wiring path claims into a launcher is RULED OUT on measurement (14 incidents: 1 caught, 2 false refusals) -- do not re-propose without a measurement that overturns that count. 222 -> 228 tests; test/fleet-skill.test.mjs enforces the acceptance greps so the rewrite cannot silently regress. The published tarball was verified from the registry, not from dist/. The head of the queue is demand-gated-tail, which ships on a real demand signal, not on a schedule: an untouched head is the intended state, not drift.",
-  "casp_version": "0.16.0"
+  "casp_version": "0.17.0"
 }

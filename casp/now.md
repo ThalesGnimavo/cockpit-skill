@@ -1,6 +1,6 @@
 # What I'm doing NOW
 
-> **Updated** : 2026-08-17 (session 26-08-17-001 — 0.16.0).
+> **Updated** : 2026-09-05 (session 26-09-05-001 — 0.17.0, built, unpublished).
 >
 > **Read this first.** The single most important file in casp/. "Where am I?" has a one-screen answer here.
 
@@ -8,9 +8,7 @@
 
 ## Current focus (1 sentence)
 
-**0.16.0 published — the `fleet` skill ships in the package, and says plainly it is not CASP.** A fourth Claude Code skill (`skills/fleet`, next to `/casp`, `/next`, `/audit-batch`) distills three measured multi-session trials: default shape one writer + N adversarial readers, the measured value is contradiction not speed, gates-isolable-per-session is a per-project property to measure first, commit by pathspec, stale belief is the dominant failure mode. The boundary is stated and tested: fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature; no `casp check` rule reads it; its model default is empty. Wiring path claims into a launcher is **ruled out on measurement** (14 incidents: 1 caught, 2 false refusals), not pending. 228/228 tests.
-
----
+**0.17.0 built and tested, NOT yet published — a finished roadmap is not a finished project.** `CASP-PROMPT-011` fails a cockpit that has shipped and reports nothing to start (exempt while nothing has shipped, so `init` stays green); the remedy is a **discussion prompt** — `casp new discussion --slug <slug>`, frontmatter `kind: discussion`, a session with the human whose deliverable is decisions (next roadmap, distribution, pricing, support) and the prompts they produce, no code; `casp next` announces the kind on stderr. Triggered the same day by `tap.ci` closing its last chantier on a null pointer that `check` called "genuinely parked". One rotted date-dependent test fixed on the way. 231/231 tests. **`npm publish` awaits the CEO's go.**
 
 ## Concrete next action if I have…
 

@@ -3,7 +3,7 @@ status: queued
 session_id: pending
 session_log: pending
 drafted_at: 2026-06-10
-next_after: PHASE-FLEET-SHIPS-WITH-CASP
+next_after: PHASE-QUEUE-NEVER-EMPTY
 ---
 
 # Session — demand-gated-tail : holding prompt (DO NOT EXECUTE without a signal)
