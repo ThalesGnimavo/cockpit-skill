@@ -1,16 +1,16 @@
 {
   "updated_at": "2026-09-05",
-  "last_session_id": "26-09-05-001-queue-never-empty",
-  "last_commit": "d815b77",
+  "last_session_id": "26-09-10-001-schedule-layer-arbitration",
+  "last_commit": "3fdd282",
   "current_phase": "queue-never-empty",
-  "next_phase": "demand-gated-tail",
-  "next_prompt": "docs/plan/sessions/PHASE-DEMAND-GATED-TAIL.md",
+  "next_phase": "schedule-layer",
+  "next_prompt": "docs/plan/sessions/PHASE-SCHEDULE-LAYER.md",
   "arbitration": {
-    "phase": "queue-never-empty",
+    "phase": "schedule-layer",
     "shape": "solo",
-    "decided_at": "2026-09-05",
-    "by": "26-09-05-001",
-    "reason": "one rule, one template, one banner and their docs: a single coupled surface with no second writing lane; the CEO request itself is the arbitration"
+    "decided_at": "2026-09-10",
+    "by": "26-09-10-001",
+    "reason": "one repository, one coupled surface (rules.ts, check.ts, schemas, tests) with no second writing lane; the arbitration of the three briefs is written before the first line of code, in the prompt itself"
   },
   "phases_shipped": [
     "0.1.0-initial-release",
@@ -55,9 +55,10 @@
     "queue-never-empty"
   ],
   "phases_queued": [
+    "schedule-layer",
     "demand-gated-tail"
   ],
   "phases_backlog": [],
-  "notes": "0.16.0 is PUBLISHED -- npm dist-tags.latest is 0.16.0, shasum 4c0555a4a8fd95e42d8b09292e351037b64eabbb, 42 files. What it ships: the fleet skill (skills/fleet/SKILL.md), a public rewrite distilled from three measured multi-session trials -- default shape one writer plus N adversarial read-only reviewers, the measured value is contradiction not speed, gates-isolable-per-session is a per-project property to measure before launching, commit by pathspec, stale belief is the dominant failure mode. The boundary is stated and mechanically tested: fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature; no casp check rule reads it; its model default is empty. Launcher decision: skill only, no launch script ships (reason in CHANGELOG). Wiring path claims into a launcher is RULED OUT on measurement (14 incidents: 1 caught, 2 false refusals) -- do not re-propose without a measurement that overturns that count. 222 -> 228 tests; test/fleet-skill.test.mjs enforces the acceptance greps so the rewrite cannot silently regress. The published tarball was verified from the registry, not from dist/. The head of the queue is demand-gated-tail, which ships on a real demand signal, not on a schedule: an untouched head is the intended state, not drift.",
+  "notes": "0.16.0 is PUBLISHED -- npm dist-tags.latest is 0.16.0, shasum 4c0555a4a8fd95e42d8b09292e351037b64eabbb, 42 files. What it ships: the fleet skill (skills/fleet/SKILL.md), a public rewrite distilled from three measured multi-session trials -- default shape one writer plus N adversarial read-only reviewers, the measured value is contradiction not speed, gates-isolable-per-session is a per-project property to measure before launching, commit by pathspec, stale belief is the dominant failure mode. The boundary is stated and mechanically tested: fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature; no casp check rule reads it; its model default is empty. Launcher decision: skill only, no launch script ships (reason in CHANGELOG). Wiring path claims into a launcher is RULED OUT on measurement (14 incidents: 1 caught, 2 false refusals) -- do not re-propose without a measurement that overturns that count. 222 -> 228 tests; test/fleet-skill.test.mjs enforces the acceptance greps so the rewrite cannot silently regress. The published tarball was verified from the registry, not from dist/. The head of the queue is demand-gated-tail, which ships on a real demand signal, not on a schedule: an untouched head is the intended state, not drift. | 2026-09-10 (26-09-10-001): schedule-layer queued as the head, arbitrated from three competing briefs and closed on four forks (clock at WARN never FAIL, separate opt-in casp/schedule.json, phase name as join key, a printer verb that prints the arithmetic). demand-gated-tail rechained behind it. No source touched; the implementation is the next session.",
   "casp_version": "0.17.0"
 }
