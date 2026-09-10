@@ -23,7 +23,7 @@ la première ligne ; aucune n'a été rouverte pendant l'implémentation.
 | `src/shared.ts` | `detectUtf8()` / `setCharset()`, même posture que l'aide couleur : on détecte une fois, on expose la bascule pour que les deux branches soient testables. |
 | `schemas/schedule.schema.json`, `schemas/schedule-result.schema.json` | Les deux contrats publiés. |
 | `templates/templates/schedule.json` | L'exemple copiable, **sous les scaffolds** — voir § 3. |
-| `test/schedule.test.mjs` (+18 tests) | Les deux sens de chaque règle, les deux garde-fous, les dessins épinglés au caractère près. |
+| `test/schedule.test.mjs` (+21 tests) | Les deux sens de chaque règle, les deux garde-fous, les dessins épinglés au caractère près. |
 
 Docs : `docs/rules.md` (les quatre codes, l'aire, la doctrine de sévérité), `docs/schedule-json.md`
 (nouveau contrat machine), `docs/what-casp-proves.md` (« ne prouve pas qu'un calendrier est
@@ -90,7 +90,7 @@ C'est exactement ce que « vérifier plutôt que croire » était censé produir
 
 ```
 npm run build   → exit 0
-npm test        → 251/251, 0 fail   (231 avant cette session, même commande)
+npm test        → 256/256, 0 fail   (231 avant cette session, même commande)
 casp check      → exit 0
 ```
 
@@ -98,6 +98,42 @@ casp check      → exit 0
 `casp schedule --json` valide contre `schemas/schedule-result.schema.json` dans les trois
 branches (non adopté, malformé, adopté-valide) ; `casp status --json` est inchangé et son schéma
 reste en v1 — aucun champ n'a mérité sa place.
+
+## 5b · Audit adverse — GO-WITH-FIXES, cinq correctifs appliqués
+
+Un auditeur en lecture seule a passé les onze points du brief. L'invariant tient : attaqué par
+cinq chemins (direct, indirect par l'ordre des identifiants, par les chemins d'exception, par
+`checkOneSafe`, par le gate de `casp next`), l'horloge ne déplace aucun code de sortie. Les
+défauts trouvés étaient tous du côté **imprimeur**, pas du côté gate.
+
+1. **Le parcours git n'était borné qu'après coup.** `WALK_CAP` plafonnait le `git log`, mais un
+   `git show` était lancé par commit **avant** le filtre de fenêtre : sur un cockpit de deux ans,
+   400 processus à chaque `casp close` pour en garder douze. La fenêtre borne désormais le
+   parcours (`sampleHistory({ since })`), et un test le vérifie.
+2. **`casp schedule --since 99999999` sortait en 1 avec « this is a casp bug ».** `addDays`
+   dépassait la plage représentable de `Date`. La fenêtre est **bornée, jamais rejetée** — un
+   verbe qui rapporte ne sort pas non-zéro sur un cockpit lisible à cause d'un drapeau.
+3. **Le contrat `--json` n'était épinglé que sur une branche sur trois.** Les branches malformée
+   et adoptée-valide sont maintenant validées contre le schéma, y compris les clés obligatoires
+   de `claims[]` et `findings[]`.
+4. **Un renommage dans la fenêtre s'annonçait « no phase shipped », ce qui est faux.** Le delta
+   est une différence de tailles de listes, pas un compte de livraisons. La phrase dit désormais
+   « did not grow » et l'explique ; `docs/schedule-json.md` le documente.
+5. **Deux affirmations fausses dans les commentaires et les docs.** `casp close` « ne lance
+   aucun git » : il en lit (il en lisait déjà avant cette session) ; la contrainte dure porte sur
+   les **écritures**, et le texte le dit maintenant. Et l'évidence de `CASP-SCHEDULE-001`
+   prétendait comparer au fichier de schéma alors que la validation est écrite à la main — les
+   deux contrats sont nommés, avec la divergence connue (`2026-02-30`).
+
+**Un point du rapport a été rejeté après vérification** : l'auditeur signalait que `casp close`
+lançait le validateur deux fois, via `runStatus`. Faux — `checkOneSafe` n'est atteint dans
+`src/status.ts` que depuis `buildStatusReport`, lui-même réservé à la branche `--json`, et
+`close` appelle `runStatus([])`. Aucun correctif appliqué.
+
+Différés du rapport, sans correctif : la double lecture du fichier sur le chemin malformé,
+`commits_in_window` qui exclut silencieusement un blob illisible (documenté plutôt que corrigé),
+et `todayISO()` qui rend le jour **UTC** — documenté dans `docs/rules.md`, sans effet possible
+sur un FAIL.
 
 ## 6 · Différés / risques
 
@@ -111,9 +147,10 @@ reste en v1 — aucun champ n'a mérité sa place.
   une autre dans le même commit rend un delta nul ; la mesure le signale comme « pas de rythme »
   plutôt que comme un rythme faux, ce qui est la bonne défaillance, mais elle n'est pas
   distinguée d'une réelle absence de livraison.
-- **Un jour de décalage possible près de minuit** entre `todayISO()` (date locale) et les
-  comparaisons UTC. L'effet maximal est de déplacer un WARN d'un jour ; par construction il ne
-  peut pas atteindre un FAIL.
+- **`todayISO()` rend le jour UTC**, comme `CASP-FACT-003` depuis la 0.11. À l'ouest de UTC en
+  soirée, une date peut se lire passée quelques heures trop tôt. L'effet maximal est de déplacer
+  un WARN ; par construction rien de cette famille ne peut atteindre un FAIL. Documenté dans
+  `docs/rules.md`.
 
 ## 7 · État
 

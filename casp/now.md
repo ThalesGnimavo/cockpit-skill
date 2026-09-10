@@ -8,7 +8,7 @@
 
 ## Current focus (1 sentence)
 
-**0.18.0 built — a dated claim nobody confronts with the calendar goes false, not stale.** An opt-in `casp/schedule.json` (anchors + per-phase due dates, joined on the phase name) is verified by four new `CASP-SCHEDULE-*` rules in a ninth area, and `casp schedule` prints the pace **measured** from the history of `casp/state.json`, the derived length of the queue, the recorded claims and the contradictions. The boundary is mechanical, not editorial: a schedule that contradicts itself is a FAIL, a missed date is a WARN, and two tests pin it — severity, and that moving the clock a year changes no FAIL. `casp status` now draws a progress line on every run and `casp close` ends on the board. 231 → 251 tests, `casp check` = 0. **Not published**: the npm publish of 0.18.0 is a CEO act.
+**0.18.0 built — a dated claim nobody confronts with the calendar goes false, not stale.** An opt-in `casp/schedule.json` (anchors + per-phase due dates, joined on the phase name) is verified by four new `CASP-SCHEDULE-*` rules in a ninth area, and `casp schedule` prints the pace **measured** from the history of `casp/state.json`, the derived length of the queue, the recorded claims and the contradictions. The boundary is mechanical, not editorial: a schedule that contradicts itself is a FAIL, a missed date is a WARN, and two tests pin it — severity, and that moving the clock a year changes no FAIL. `casp status` now draws a progress line on every run and `casp close` ends on the board. 231 → 256 tests, `casp check` = 0. **Not published**: the npm publish of 0.18.0 is a CEO act.
 
 ## Concrete next action if I have…
 
