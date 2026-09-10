@@ -402,6 +402,7 @@ is trivially typed: one syllable, no homographs, the same in English, French or 
 | `casp audit status` / `bump` | The deep-audit watermark: separates the cheap per-merge gate (`check`, every session) from the expensive batch pass (adversarial sub-agent audit + full e2e + security review, on demand). `status` shows the unaudited range `last_deep_audit..HEAD` (`--json` for data); `bump [<sha>]` records HEAD as deep-audited. A **production-cutover gate, never a merge gate** — `check` doesn't block on it. Driven by the `/audit-batch` skill. |
 | `casp live claim` / `release` / `claims` / `controller` / `watch` / `tail` / `hook` / `install` / `off` / `on` | Coordination between parallel sessions on **one machine** — the in-flight record beside the durable one. `claim` holds a repo-relative path prefix for a session with a TTL and a holder-liveness probe (overlap with a foreign claim is refused in both directions; segment-boundary prefixes, no globs). `hook` is one command wired for every harness event: as `PreToolUse` it refuses a file-writing tool call on a path a living foreign session holds (**the only non-zero exit in the verb**), otherwise it journals. `controller` declares the one session allowed to write shared state — the cockpit, session logs, root instruction files, lockfiles — and is **dormant unless a fleet is demonstrably flying**, so a solo session is never blocked from its own `casp/state.json`. `watch` / `tail` are the human's view of `casp/live/journal.jsonl`. **Fails open by contract** and stands down entirely on `CASP_LIVE=0` or `casp live off [--global]`. `casp/live/` is machine-local runtime state, self-gitignored — **`casp check` never reads it and it never gates a push**. **It guards path writes, not the side effects of shared state**: a `git commit` without a pathspec publishes the whole index, an install regenerates a shared lockfile — in-lane actions with out-of-lane effects that no claim sees ([threat model](https://github.com/ThalesGnimavo/casp/blob/main/docs/threat-model.md)). |
 | `casp fact list` / `check` / `stale` / `verify <id>` | The facts layer (opt-in via `casp/facts.json` — see [docs/rules.md](https://github.com/ThalesGnimavo/casp/blob/main/docs/rules.md#the-facts-layer)): claims verified once, kept fresh by comparing a source hash and a TTL, never by a model judging prose. `list`/`check`/`stale` are read-only; `verify <id>` replays the fact's declared method, shows the before/after, and asks for confirmation (`--yes` to skip it) before writing. The one deliberate code-execution surface in the binary — everything else only reads, and no gating path can reach it. |
+| `casp schedule` | Measure the shipping pace from git and print the recorded dates (opt-in via `casp/schedule.json` — see [docs/rules.md](https://github.com/ThalesGnimavo/casp/blob/main/docs/rules.md#the-schedule-layer)). Four blocks in one screen: the pace, walked from the history of `casp/state.json`; the derived length of the queue (`phases_queued ÷ pace`) and the date it lands on; every anchor and due date marked `ahead`/`due`/`passed`; and the contradictions `check` would emit. `--since <weeks>` moves the window, which is **always printed next to the rate**; `--json` for data ([docs/schedule-json.md](https://github.com/ThalesGnimavo/casp/blob/main/docs/schedule-json.md)). **Reports, never gates** — exits 0 even on drift. |
 | `casp rules` | List the verification rules `check` enforces — the stable `CASP-<AREA>-<NNN>` codes that appear on every finding. `--json` for data. |
 | `casp explain <CODE>` | Print one rule's full definition: what it verifies, the evidence it inspects, and how to remediate. Accepts a code (`CASP-GIT-001`) or an internal finding id. |
 | `casp doctor` | Read-only environment diagnostic for onboarding: Node, git, `casp/state.json`, the cockpit's CASP version, the resolved sessions/logs dirs, the pre-push hook and `core.hooksPath`. `PASS`/`WARN`/`FAIL` per line (`--json` for data). **Never gates** — always exits 0; it maps what to fix, `check` is the gate. |
@@ -529,6 +530,32 @@ structured PASS/WARN/FAIL with a stable, documented schema — for CI annotation
 and roll-ups. See [docs/check-json.md](https://github.com/ThalesGnimavo/casp/blob/main/docs/check-json.md).
 
 ---
+
+## Dates, when you record them
+
+Roadmaps carry dates; `state.json` carries phases; until 0.18 nothing connected the two, so
+cockpits ended up with a `launch_date` field nothing verified. A dated claim nobody confronts
+with the calendar does not go stale — it goes false.
+
+`casp/schedule.json` is opt-in (`casp init` never creates it — copy the example out of
+`casp/templates/`). It records `anchors` and per-phase `due` dates joined on the phase name,
+and `casp check` verifies them against the phase lists and the calendar. Three claims are
+worth stating plainly, because each is testable:
+
+- **casp records and verifies dated claims; it never proposes one.** No estimation, no
+  planning, no work assigned to a week, no queue reordered by urgency.
+- **A missed date is not drift and never fails a push.** A schedule that contradicts itself
+  is a FAIL (`CASP-SCHEDULE-003`); a date that has passed is a WARN (`004`), always. Lateness
+  honestly recorded is the record being *correct*. Two tests pin this — the severity, and
+  that moving the clock a year changes no FAIL.
+- **`casp schedule` measures the pace from git and prints arithmetic, not a forecast.** The
+  rate comes from walking `casp/state.json` through history; the window is recent by default
+  and always printed next to it; with fewer than two data points it says so and derives
+  nothing. **casp never invents a rate.**
+
+`casp status` also draws a progress line from the three phase lists on every run, and
+`casp close` now ends on that board — shipped fills the bar, queued is the empty part,
+backlog is named but not drawn, because a backlog has no committed length.
 
 ## What this is NOT
 

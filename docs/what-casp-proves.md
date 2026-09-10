@@ -54,6 +54,14 @@ provide. A clean `casp check` deliberately says **nothing** about:
   claims a rule covers are checked.
 - **infrastructure, secrets, or anything outside the repository** — CASP reads
   your filesystem and your `git`, nothing else.
+- **that a schedule is achievable.** CASP verifies a *recorded* schedule against
+  the phase lists and the calendar: that it does not contradict itself, that it
+  dates phases which exist, and that a queued phase has not silently slipped into
+  the past. It does not estimate, does not propose a date, and says nothing about
+  whether the dates are realistic. A green `casp check` on a cockpit with a
+  `casp/schedule.json` means the record is coherent, never that the plan will
+  hold. `casp schedule` prints a pace *measured* from git and the arithmetic that
+  follows from it — a quotient, never a forecast.
 
 This is why CASP is a **complement**, not a replacement. It is the deterministic
 floor beneath tests, review, and CI — the one check that is a mechanical

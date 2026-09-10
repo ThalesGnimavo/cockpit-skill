@@ -14,10 +14,16 @@ import {
   readTextFile,
   resolveDirs,
   setColor,
+  glyphs,
+  setCharset,
+  todayISO,
   type State
 } from './shared.js';
 import { checkOneSafe, summarize } from './check.js';
 import { analyzeChain } from './chain.js';
+import { progressLine } from './board.js';
+import { phaseListsOf } from './schedule.js';
+import { scheduleStatusLine } from './schedule-report.js';
 
 const ROOT = process.cwd();
 const STATE = join(ROOT, 'casp', 'state.json');
@@ -169,7 +175,10 @@ function section(label: string, body: string): void {
 }
 
 export function runStatus(args: string[]): void {
-  if (args.includes('--plain')) setColor(false);
+  if (args.includes('--plain')) {
+    setColor(false);
+    setCharset(false);
+  }
 
   if (!existsSync(STATE)) {
     console.error(c.red('no casp/state.json found'));
@@ -234,6 +243,23 @@ export function runStatus(args: string[]): void {
     `  last_commit      ${c.gray(String(state.last_commit ?? '-'))}`
   ].join('\n');
   section('STATE', summary);
+
+  // The board, always: nothing in the close protocol produced a picture of where
+  // the project stands, so no session showed one and the operator rebuilt it by
+  // hand. Drawn from the three phase lists — counts, never an estimate.
+  const lists = phaseListsOf(state);
+  console.log('');
+  console.log(
+    '  ' +
+      progressLine(
+        lists.shipped.length,
+        lists.queued.length,
+        lists.backlog.length,
+        glyphs.utf8
+      )
+  );
+  const scheduleLine = scheduleStatusLine(ROOT, state, todayISO());
+  if (scheduleLine) console.log('  ' + c.gray(scheduleLine));
 
   const nextPromptPath = state.next_prompt ? join(ROOT, String(state.next_prompt)) : null;
   if (nextPromptPath && existsSync(nextPromptPath)) {

@@ -14,6 +14,7 @@ import { runInit } from './init.js';
 import { runUpgrade } from './upgrade.js';
 import { runCheck } from './check.js';
 import { runStatus } from './status.js';
+import { runSchedule } from './schedule-report.js';
 import { runNew } from './new.js';
 import { runNext } from './next.js';
 import { runShip } from './ship.js';
@@ -78,6 +79,9 @@ async function main(): Promise<void> {
       break;
     case 'check':
       runCheck(rest);
+      break;
+    case 'schedule':
+      runSchedule(rest);
       break;
     case 'next':
       runNext(rest);

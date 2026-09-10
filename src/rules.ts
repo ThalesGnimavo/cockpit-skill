@@ -20,7 +20,7 @@ export interface Rule {
   code: string;
   /** Short human title. */
   title: string;
-  /** Area bucket: STATE | PROMPT | SESSION | GIT | MIGRATION | FACT | IO | WORKTREE. */
+  /** Area bucket: STATE | PROMPT | SESSION | GIT | MIGRATION | FACT | SCHEDULE | IO | WORKTREE. */
   area: string;
   /** The normative claim this rule verifies. */
   verifies: string;
@@ -319,6 +319,46 @@ export const RULES: Rule[] = [
     evidence: 'method\'s text against the static trap registry.',
     remediation: 'Use a real measurement (e.g. count(*) instead of a planner estimate) and re-verify.',
     matches: (id) => id.startsWith('fact.trap.')
+  },
+  {
+    code: 'CASP-SCHEDULE-001',
+    title: 'schedule.json validates',
+    area: 'SCHEDULE',
+    verifies:
+      'When casp/schedule.json exists it is a JSON object whose anchors and due entries carry a non-empty id/phase, a YYYY-MM-DD date that is a real day, unique anchor ids, and a `before` naming a declared anchor. Opt-in: a cockpit with no schedule.json emits no CASP-SCHEDULE-* finding at all.',
+    evidence: 'casp/schedule.json on disk, compared against schemas/schedule.schema.json\'s structural contract.',
+    remediation: 'Fix the field the message names, or remove the file to opt back out of the schedule layer.',
+    matches: (id) => id === 'schedule.file' || id === 'schedule.valid'
+  },
+  {
+    code: 'CASP-SCHEDULE-002',
+    title: 'A dated phase exists in a phase list',
+    area: 'SCHEDULE',
+    verifies:
+      'Every `due.phase` in casp/schedule.json appears in phases_shipped, phases_queued or phases_backlog. Advisory (WARN) on purpose: phases get renamed mid-flight, and failing the push for a rename teaches operators to delete the schedule — the opposite of the goal.',
+    evidence: 'The due entries in casp/schedule.json vs the three phase lists in casp/state.json.',
+    remediation: 'Rename the due to match the phase, or drop the entry — a date on a phase that does not exist dates nothing.',
+    matches: (id) => id.startsWith('schedule.002.')
+  },
+  {
+    code: 'CASP-SCHEDULE-003',
+    title: 'The schedule does not contradict itself',
+    area: 'SCHEDULE',
+    verifies:
+      'Anchors are in strictly ascending date order (their position in the array IS the declared chronology), and no queued/backlog phase is dated on or after the anchor it declares `before`. Shipped phases are never inspected: history is not drift. No clock — this compares the file against itself and against the phase lists.',
+    evidence: 'The anchors array order and each due\'s date vs its declared anchor, both from casp/schedule.json.',
+    remediation: 'Reorder the anchors, move the date, or drop the `before` declaration.',
+    matches: (id) => id.startsWith('schedule.003.')
+  },
+  {
+    code: 'CASP-SCHEDULE-004',
+    title: 'A queued dated phase has not silently slipped into the past',
+    area: 'SCHEDULE',
+    verifies:
+      'A phase still in phases_queued or phases_backlog whose recorded date — or the anchor it is bound to — is in the past. THE ONLY RULE IN THIS FAMILY THAT READS THE CLOCK, and it is WARN by construction: a missed date honestly recorded is the record being correct, not drift. The clock can add a WARN here and can never add a FAIL.',
+    evidence: 'Today\'s date vs the due (or bound anchor) dates in casp/schedule.json, for unshipped phases only.',
+    remediation: 'Ship it, re-date it, or move it to the backlog. Never a blocked push.',
+    matches: (id) => id.startsWith('schedule.004.')
   },
   {
     code: 'CASP-IO-001',

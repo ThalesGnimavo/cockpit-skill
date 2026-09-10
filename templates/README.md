@@ -36,6 +36,7 @@ The whole protocol fits in your repo: state files + a CLI + canonical templates 
 | [templates/session-prompt.md](templates/session-prompt.md) | The skeleton for `docs/plan/sessions/<id>-<slug>.md`. |
 | [templates/session-log.md](templates/session-log.md) | The skeleton for `session-logs/YY-MM-DD-NNN-<slug>.md`. |
 | [templates/audit-brief.md](templates/audit-brief.md) | The Explore sub-agent brief for post-implementation audits. |
+| [templates/schedule.json](templates/schedule.json) | Copyable example for `casp/schedule.json` — the **opt-in** schedule layer. Copy it up one level and edit it to adopt; leave it where it is to stay opted out. |
 
 ---
 

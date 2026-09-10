@@ -315,6 +315,10 @@ export interface State {
   next_prompt?: string;
   phases_shipped?: string[];
   phases_queued?: string[];
+  // Named but never drawn by the progress bar, and never given a length: a
+  // backlog is what has not been committed to. Read by the schedule layer as a
+  // third place a dated phase may legitimately live.
+  phases_backlog?: string[];
   migrations_applied?: string[];
   // The commit that last passed the batch deep audit (`/audit-batch`): adversarial
   // sub-agent review + full e2e + security pass. Everything after it on the branch
@@ -453,4 +457,29 @@ export function saveState(path: string, state: State, expectedHash?: string): vo
 
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Charset detection, for the two drawings the cockpit prints (the progress bar
+ * in `casp status`, the timeline in `casp schedule`).
+ *
+ * Same posture as COLOR_ON above: detect once, expose a setter so `--plain` and
+ * the tests can force either branch. A bare environment (no locale variables at
+ * all — the common case inside CI containers and spawned test processes) is
+ * treated as UTF-8 capable, because it is; only a locale that EXPLICITLY says
+ * something else (LANG=C, POSIX, an 8859 charset) degrades. `CASP_ASCII=1`
+ * forces the degraded charset from outside, which is how the exact-string tests
+ * cover the fallback without inventing a locale.
+ */
+function detectUtf8(): boolean {
+  if (process.env.CASP_ASCII === '1') return false;
+  const locale = process.env.LC_ALL || process.env.LC_CTYPE || process.env.LANG;
+  if (!locale) return true;
+  return /utf-?8/i.test(locale);
+}
+
+export const glyphs = { utf8: detectUtf8() };
+
+export function setCharset(utf8: boolean): void {
+  glyphs.utf8 = utf8;
 }

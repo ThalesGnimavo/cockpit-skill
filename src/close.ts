@@ -3,7 +3,9 @@
  *
  * Auto-detects the implementation commit (HEAD) and the newest session log,
  * lets you confirm or override them, bumps `last_commit` / `last_session_id` /
- * `updated_at` in state.json, then runs `casp check` and exits with its verdict.
+ * `updated_at` in state.json, runs `casp check`, prints THE BOARD (the status
+ * rendering, plus the schedule rendering when casp/schedule.json exists), and
+ * exits with the check's verdict.
  *
  * HARD CONSTRAINT: close NEVER runs git (no add / commit / push). It mutates
  * casp/state.json and validates — the operator owns the commit. The moment it
@@ -22,7 +24,10 @@ import { join } from 'node:path';
 import { exit, stdin, stdout } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { c, git, isDir, loadStateWithHash, resolveDirs, readDirEntries, saveState, StateConflictError, todayISO } from './shared.js';
-import { runCheck } from './check.js';
+import { DEFAULT_WINDOW_WEEKS } from './pace.js';
+import { checkOneSafe, printReport, summarize } from './check.js';
+import { runStatus } from './status.js';
+import { assemble, printSchedule } from './schedule-report.js';
 
 function getArg(args: string[], flag: string): string | undefined {
   const i = args.indexOf(flag);
@@ -111,7 +116,21 @@ export async function runClose(args: string[]): Promise<void> {
   console.log(`        ${c.gray(`updated_at      → ${state.updated_at}`)}`);
   console.log(c.gray('        (no git operations — commit the state bump yourself)'));
 
-  // Validate and exit with the check's verdict. runCheck prints its own report
-  // and calls exit(), so this is the terminal action.
-  runCheck([]);
+  // Validate, then print THE BOARD, then exit with the check's verdict.
+  //
+  // Why close is where the picture belongs: nothing in the close protocol
+  // produced one, so no session ever showed where the project stood and the
+  // operator rebuilt it by hand from the logs. The verb every close already
+  // runs is the only place a picture is guaranteed to be seen. It is the SAME
+  // renderer `casp status` and `casp schedule` use — a second one drifts from
+  // the first, and then the close prints a different picture from the verb.
+  //
+  // close still runs NO git: this is reading and printing, nothing else.
+  const findings = checkOneSafe(root);
+  printReport(findings, false);
+  runStatus([]);
+  if (existsSync(join(root, 'casp', 'schedule.json'))) {
+    printSchedule(assemble(root, state, todayISO(), DEFAULT_WINDOW_WEEKS));
+  }
+  exit(summarize(findings).fail > 0 ? 1 : 0);
 }

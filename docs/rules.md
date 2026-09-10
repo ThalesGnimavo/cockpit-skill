@@ -55,6 +55,10 @@ not verify that your code is correct, deployed, or bug-free. See
 | `CASP-FACT-004` | FACT | used_in documents carry the fact's marker |
 | `CASP-FACT-005` | FACT | Fact records a reproduction method |
 | `CASP-FACT-006` | FACT | method does not match a known measurement trap |
+| `CASP-SCHEDULE-001` | SCHEDULE | schedule.json validates |
+| `CASP-SCHEDULE-002` | SCHEDULE | A dated phase exists in a phase list |
+| `CASP-SCHEDULE-003` | SCHEDULE | The schedule does not contradict itself |
+| `CASP-SCHEDULE-004` | SCHEDULE | A queued dated phase has not silently slipped into the past |
 | `CASP-IO-001` | IO | Repository content the gate needs is readable |
 | `CASP-IO-002` | IO | The validation run completed |
 | `CASP-WORKTREE-001` | WORKTREE | State surface is committed |
@@ -83,6 +87,10 @@ read, so adding them could not redden a cockpit that had not opted in:
   so an unedited placeholder, an empty value and `null` are not declarations.
 - `CASP-FACT-001` … `CASP-FACT-006` read `casp/facts.json`. No such file → no
   finding at all, not even a PASS. See [the facts layer](#the-facts-layer) below.
+- `CASP-SCHEDULE-001` … `CASP-SCHEDULE-004` read `casp/schedule.json`. No such file →
+  no finding at all, not even a PASS. The example ships under `casp/templates/`, so
+  `casp init` never adopts the layer on your behalf: copy it up one level to opt in.
+  See [the schedule layer](#the-schedule-layer) below.
 - `CASP-PROMPT-011` reads `phases_shipped`. Nothing shipped → no finding: a cockpit
   that has not started is not one that has finished. Once anything has shipped, an
   empty `next_prompt` over an empty queue is a FAIL — **a finished roadmap is not a
@@ -154,3 +162,57 @@ fuzzy-matched, and a reference that would need a guess simply does not resolve.
 A **shipped** prompt is a valid target — a chain legitimately terminates on the
 slice that ran before it — but never a subject: its own `next_after` is history
 and is not re-litigated.
+
+## The schedule layer
+
+`casp/schedule.json` records **dated claims** about a project's phases: `anchors`
+(fixed dates the project is organised around) and `due` (a date on a phase). CASP
+verifies the recorded schedule against the phase lists and the calendar. It does
+not estimate, does not propose a date, and does not order the queue.
+
+```jsonc
+{
+  "schema_version": 1,
+  "anchors": [                                   // ordered: position IS the chronology
+    { "id": "freeze", "date": "2026-12-01" },
+    { "id": "launch", "date": "2027-01-02" }
+  ],
+  "due": [
+    { "phase": "multi-service-projects", "date": "2026-10-04", "before": "freeze" },
+    { "phase": "deploy-diagnostics",     "date": "2026-10-18" }
+  ]
+}
+```
+
+The join key is the **phase name** — the unit `phases_shipped` / `phases_queued` /
+`phases_backlog` already verify. Dates are `YYYY-MM-DD` only: no time, no zone, no
+relative expression, because a zone makes the same file resolve differently on two
+machines.
+
+### Severity doctrine — the clock can add a WARN and can never add a FAIL
+
+This is the boundary the layer was designed around, and two tests enforce it.
+
+- **A schedule that contradicts itself is a FAIL** (`003`): anchors declared out of
+  order, or a queued phase dated on or after the anchor it says it lands `before`.
+  No clock is involved — this compares the file against itself and against the phase
+  lists, both of which are in the repository and falsifiable.
+- **A late phase honestly recorded is a WARN** (`004`), always. A missed date is the
+  record being *correct* about a project that slipped; drift is the record being
+  *wrong*. Blocking a push for lateness would teach operators to delete the
+  schedule, which removes the evidence the gate exists to check.
+- **A renamed phase is a WARN** (`002`), for the same reason: phases get renamed
+  mid-flight, and a rename must not stop a push.
+- **Shipped phases are never inspected** by `003` or `004`. History is not drift.
+
+`CASP-FACT-003` also reads today's date, so "no clock in the gate" was never the
+doctrine. The doctrine is a deterministic comparison of a recorded claim against a
+defined evidence source; the calendar is one *when the user recorded the date*. What
+is forbidden is narrower and testable: **nothing in this family may change the exit
+code because of the clock.**
+
+### Reading it
+
+`casp schedule` prints the pace measured from git, the derived length of the queue,
+every recorded claim marked against today, and the contradictions above — see
+[schedule-json.md](./schedule-json.md) for the machine-readable form.

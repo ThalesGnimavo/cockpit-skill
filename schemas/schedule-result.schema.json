@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://casp.sh/schemas/schedule-result.schema.json",
+  "title": "casp schedule --json report",
+  "description": "The stable machine-readable output of `casp schedule`. Reporting, never gating: this verb exits 0 on any readable cockpit, drift included. Documented in docs/schedule-json.md. `pace` is MEASURED from the git history of casp/state.json every run and is recorded nowhere — a stored pace drifts from the real one by construction. `derived` is arithmetic over that pace, never a forecast. The timeline drawing the human rendering prints is deliberately absent: a picture is not a machine contract.",
+  "type": "object",
+  "required": ["schema_version", "casp_version", "today", "adopted", "phases", "pace", "derived", "claims", "findings"],
+  "properties": {
+    "schema_version": { "type": "integer", "description": "Bumps only on a breaking shape change; additive fields do not bump it." },
+    "casp_version": { "type": "string" },
+    "today": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "The day every `state` and `days` field below was computed against." },
+    "adopted": { "type": "boolean", "description": "false when there is no casp/schedule.json. The verb still reports pace and derived length." },
+    "malformed": { "type": "boolean" },
+    "malformed_detail": { "type": ["string", "null"], "description": "Every structural problem found, joined — one sentence per problem, never a stack." },
+    "phases": {
+      "type": "object",
+      "required": ["shipped", "queued", "backlog"],
+      "properties": {
+        "shipped": { "type": "integer" },
+        "queued": { "type": "integer" },
+        "backlog": { "type": "integer" }
+      }
+    },
+    "pace": {
+      "type": "object",
+      "required": ["measurable", "window_weeks", "commits_in_window", "phases_per_week", "reason"],
+      "description": "Measured from `git log -- casp/state.json`, reading phases_shipped.length out of each commit's blob. `measurable: false` with a `reason` whenever fewer than two usable data points exist, the window has no span, or nothing shipped in it — casp never invents a rate.",
+      "properties": {
+        "measurable": { "type": "boolean" },
+        "window_weeks": { "type": "integer", "description": "The window, anchored on `today`, not on the newest commit: a cockpit whose last state commit is six months old is not still shipping at its old pace." },
+        "walk_cap": { "type": "integer", "description": "Hard cap on the history walk." },
+        "commits_in_window": { "type": "integer" },
+        "first_commit": { "type": ["string", "null"] },
+        "first_date": { "type": ["string", "null"] },
+        "last_commit": { "type": ["string", "null"] },
+        "last_date": { "type": ["string", "null"] },
+        "span_days": { "type": ["integer", "null"] },
+        "phases_shipped_delta": { "type": ["integer", "null"] },
+        "phases_per_week": { "type": ["number", "null"] },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "derived": {
+      "type": ["object", "null"],
+      "description": "null whenever the pace is not measurable or the queue is empty. A consumer that treats this as a commitment is misreading a quotient.",
+      "required": ["queued", "weeks", "date", "method"],
+      "properties": {
+        "queued": { "type": "integer" },
+        "weeks": { "type": "number" },
+        "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "method": { "type": "string" }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "description": "Every anchor and due recorded in the file, marked against `today`. Empty when the layer is not adopted or the file is malformed.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "id", "date", "list", "before", "state", "days"],
+        "properties": {
+          "kind": { "enum": ["anchor", "due"] },
+          "id": { "type": "string", "description": "The anchor id, or the phase name for a due." },
+          "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "list": { "type": ["string", "null"], "enum": ["shipped", "queued", "backlog", null] },
+          "before": { "type": ["string", "null"] },
+          "state": { "enum": ["ahead", "due", "passed"] },
+          "days": { "type": "integer", "description": "Signed days from today to the claim; negative once passed." }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "Exactly the CASP-SCHEDULE-* findings `casp check` would emit for this cockpit. `fail` here blocks a push there; `warn` never does, and a warn caused by the clock never becomes a fail.",
+      "items": {
+        "type": "object",
+        "required": ["code", "severity", "label", "detail", "fix"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^CASP-SCHEDULE-\\d{3}$" },
+          "severity": { "enum": ["warn", "fail"] },
+          "label": { "type": "string" },
+          "detail": { "type": "string" },
+          "fix": { "type": "string" }
+        }
+      }
+    }
+  }
+}

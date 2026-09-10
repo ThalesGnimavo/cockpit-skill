@@ -82,6 +82,26 @@ const COMMANDS: CmdHelp[] = [
     ]
   },
   {
+    name: 'schedule',
+    summary: 'Measure the shipping pace from git and print the recorded dates',
+    blurb:
+      'Opt-in, via casp/schedule.json. Prints the pace measured from the history ' +
+      'of casp/state.json, the derived length of the queue (arithmetic, not a ' +
+      'forecast), every recorded anchor and due date marked against today, and the ' +
+      'contradictions check would emit. Records and verifies dated claims; never ' +
+      'proposes one. Reporting, never gating — exits 0 even on drift.',
+    usage: ['casp schedule [--since <weeks>] [--plain] [--json]'],
+    flags: [
+      ['--since <weeks>', 'Measurement window (default 8) — always printed with the rate'],
+      ['--plain', 'No color, ASCII drawings (for pipes and logs)'],
+      ['--json', 'Machine-readable report: pace, derived length, claims, findings']
+    ],
+    examples: [
+      ['casp schedule', 'where the queue lands at the pace actually measured'],
+      ['casp schedule --since 4', 'a shorter window, after the pace changed']
+    ]
+  },
+  {
     name: 'check',
     summary: 'Validate state.json against git — exits 1 on drift',
     blurb:
@@ -425,6 +445,9 @@ COMMANDS
   status                        Print one-screen snapshot (use --plain for no color)
   status --json                 Machine-readable snapshot + embedded check verdict
                                   (stable schema; always exits 0 — reporting, not gating)
+  schedule                      Measure shipping pace from git + print the recorded
+                                  dates in casp/schedule.json (opt-in; never gates)
+                                  — --since <weeks>, --json
   check                         Validate state.json against git — exits 1 on drift
   check --quiet                 Same, suppress output unless FAIL (CI-friendly)
   check --json                  Same checks, machine-readable JSON report (stable schema)

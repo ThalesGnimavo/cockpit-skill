@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "anchors": [
+    { "id": "freeze", "date": "2026-12-01", "note": "no new phase enters the queue after this" },
+    { "id": "launch", "date": "2027-01-02" }
+  ],
+  "due": [
+    { "phase": "multi-service-projects", "date": "2026-10-04", "before": "freeze" },
+    { "phase": "deploy-diagnostics", "date": "2026-10-18" }
+  ]
+}

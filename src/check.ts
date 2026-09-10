@@ -28,11 +28,13 @@ import {
   readFrontmatter,
   readStateFile,
   resolveDirs,
+  todayISO,
   type FsFailure
 } from './shared.js';
 import { ruleFor } from './rules.js';
 import { analyzeChain } from './chain.js';
 import { analyzeFacts } from './facts.js';
+import { analyzeSchedule, phaseListsOf } from './schedule.js';
 
 type Severity = 'pass' | 'warn' | 'fail';
 export interface Finding {
@@ -55,6 +57,13 @@ export interface Finding {
  * `--json` changes the format, never the outcome.
  */
 export const JSON_SCHEMA_VERSION = 1;
+
+/** Options every entry point threads through unchanged. `today` exists for the
+ *  schedule layer's clock-invariance guard rail — see checkOne. */
+export interface CheckOptions {
+  noGit?: boolean;
+  today?: string;
+}
 
 export function summarize(findings: Finding[]): {
   pass: number;
@@ -103,8 +112,13 @@ function emitJson(findings: Finding[]): never {
  * never exits. The terminal cases (no state file / invalid JSON) return a
  * single `state.file` finding and run nothing further.
  */
-export function checkOne(root: string, opts: { noGit?: boolean } = {}): Finding[] {
+export function checkOne(root: string, opts: CheckOptions = {}): Finding[] {
   const noGit = opts.noGit ?? false;
+  // Injected, never read from the environment inside a comparison: the schedule
+  // layer's clock-invariance test runs the same fixture a year apart and asserts
+  // the FAIL set is identical. An env-var override would also hand an operator a
+  // shell-level way to fake freshness, which is the opposite of a gate.
+  const today = opts.today ?? todayISO();
   const STATE_PATH = join(root, 'casp', 'state.json');
 
   const findings: Finding[] = [];
@@ -1076,6 +1090,49 @@ export function checkOne(root: string, opts: { noGit?: boolean } = {}): Finding[
     // skip entirely (silence, exactly like an unconfigured migrations_dir).
   }
 
+  /* 7d. Schedule layer (opt-in via casp/schedule.json) --------------------- */
+
+  // OPT-IN, same posture as the facts layer above: no casp/schedule.json ⇒ no
+  // CASP-SCHEDULE-* finding at all, not even a PASS.
+  //
+  // The invariant this block exists to hold: the clock can add a WARN and can
+  // NEVER add a FAIL. 003 compares the file against itself and against the
+  // phase lists — both in the repository, both falsifiable. 004 is the only
+  // rule here that reads `today`, and it is WARN by construction. A missed date
+  // honestly recorded is the record being CORRECT; blocking a push for it would
+  // teach operators to delete the schedule, which is how a gate loses its
+  // evidence.
+  {
+    const schedulePath = join(root, 'casp', 'schedule.json');
+    const analysis = analyzeSchedule(schedulePath, phaseListsOf(state), today);
+    if (analysis.adopted && analysis.malformed) {
+      record(
+        'schedule.file',
+        'fail',
+        'casp/schedule.json is present but not valid',
+        analysis.detail,
+        'fix the JSON, or remove the file to opt back out of the schedule layer'
+      );
+    } else if (analysis.adopted && !analysis.malformed) {
+      record(
+        'schedule.valid',
+        'pass',
+        'casp/schedule.json validates',
+        `${analysis.claims.filter((cl) => cl.kind === 'anchor').length} anchor(s), ${analysis.claims.filter((cl) => cl.kind === 'due').length} dated phase(s)`
+      );
+      for (const [i, f] of analysis.findings.entries()) {
+        record(
+          `schedule.${f.code.slice('CASP-SCHEDULE-'.length)}.${i}`,
+          f.severity,
+          f.label,
+          f.detail,
+          f.fix
+        );
+      }
+    }
+    // else: no casp/schedule.json — this project records no dates, skip entirely.
+  }
+
   /* 8. Working tree clean for casp + sessions + logs -------------------- */
 
   if (!noGit) {
@@ -1112,7 +1169,7 @@ export function checkOne(root: string, opts: { noGit?: boolean } = {}): Finding[
  * It fails CLOSED. Swallowing the error into an exit-0 pass would turn a loud
  * crash into a silent green, which is strictly worse than the bug it replaces.
  */
-export function checkOneSafe(root: string, opts: { noGit?: boolean } = {}): Finding[] {
+export function checkOneSafe(root: string, opts: CheckOptions = {}): Finding[] {
   try {
     return checkOne(root, opts);
   } catch (err) {
