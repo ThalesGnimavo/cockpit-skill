@@ -116,11 +116,38 @@ Exit 0 on a readable project, exit 1 only for unreadable input, like `casp next`
 covered in `test/schemas.test.mjs`, documented in `docs/schedule-json.md`. `src/cli.ts` gains
 `case 'schedule':`; `casp help` and `docs/verbs.md` (or wherever the verb table lives) list it.
 
-### 4. `casp status` — one line
+### 4. `casp status` — the progress line, and one schedule line
 
-When the file exists: the next unshipped due (or anchor) and its distance in days. Nothing
-more. Check whether `docs/status-json.md` and `JSON_SCHEMA_VERSION` need a bump — never add a
-field to a documented JSON contract silently; `test/status-json.test.mjs` exists to catch that.
+Two additions to the human rendering, both counts drawn, neither a forecast:
+
+- **A progress line, always**, drawn from the three phase lists:
+  `progress  ████████████░░░  70 shipped · 8 queued · 3 backlog`. Shipped fills the bar,
+  queued is the empty part, backlog is named but not drawn (a backlog has no committed length).
+  Fixed width, plain block characters, degrades to `#` / `.` when the terminal is not UTF-8 (the
+  existing colour helper already knows how to degrade; follow it).
+- **One schedule line when the file exists**: the next unshipped due (or anchor), its date and
+  its distance in days.
+
+`--json` is unchanged unless a field earns its place; if one does, bump `JSON_SCHEMA_VERSION`
+and `docs/status-json.md` together — never add a field to a documented JSON contract silently;
+`test/status-json.test.mjs` exists to catch that.
+
+### 4b. `casp schedule` draws the timeline
+
+Block 3 of the verb (recorded claims) is rendered as **one timeline line** on top of the list:
+anchors and dues placed proportionally between the earliest and the latest recorded date, with
+a `today` marker — `2026-09-10 ·──────●─────┼──────┼────· 2027-01-02` with each marker
+labelled underneath. Same width discipline and same UTF-8 fallback as the progress bar. The
+list stays; the line is a reading aid, not a replacement, and `--json` carries the list only.
+
+### 4c. `casp close` prints the board
+
+`casp close` ends today on the bump and the check verdict. It ends, after this session, on the
+**board**: the `casp status` human rendering (progress line included), then the `casp schedule`
+rendering when `casp/schedule.json` exists — the same functions, not a second renderer. The
+reason is measured: nothing in the close protocol produces a picture of where the project is,
+so no session shows one. The verb that every close runs is where the picture belongs. `close`
+still runs no git.
 
 ### 5. Docs
 
@@ -138,6 +165,10 @@ field to a documented JSON contract silently; `test/status-json.test.mjs` exists
 
 ### 6. Tests — both directions, and the two guards
 
+- **The pictures are deterministic**: the progress line for a fixed `(shipped, queued, backlog)`
+  triple and the timeline line for a fixed schedule and a fixed `today` are asserted as exact
+  strings, in UTF-8 and in the degraded charset. `casp close` on a fixture ends with the board
+  (assert the progress line is present in its stdout).
 - **Opt-in is real**: no `casp/schedule.json` ⇒ zero findings whose code starts with
   `CASP-SCHEDULE`, asserted on the finding list, not on stdout.
 - Each rule fires on a purpose-built fixture and does not fire on its negative. Four pairs. For
@@ -163,9 +194,12 @@ field to a documented JSON contract silently; `test/status-json.test.mjs` exists
   `phases_shipped`, already verified against git.
 - **No PM surface.** No decision gates, no hours ledger, no capacity, no WIP limit, no assignees,
   no dependencies between items — `next_after` already encodes order and is already gated.
-- **No rendering, no reminders, no daemon, no external calendar import or sync.** Local,
-  invoked, deterministic. State all of these as ruled out in the CHANGELOG so they do not return
-  as proposals.
+- **No HTML, no Gantt page, no tracker artifact, no reminders, no daemon, no external calendar
+  import or sync.** Local, invoked, deterministic. The terminal pictures are exactly the two in
+  § 4 and § 4b — a progress bar and a timeline line, both drawn from counts and recorded dates,
+  never from an estimate. A shareable page is a harness artifact (the `fleet` precedent:
+  distributed by casp is not part of casp) and, if wanted, a skill in a later session. State all
+  of these as ruled out in the CHANGELOG so they do not return as proposals.
 - **No automatic migration** of any unknown `launch_date` / `feature_freeze` field found in a
   downstream `state.json`. Reinterpreting a user's field as protocol is not a move this tool
   makes.
