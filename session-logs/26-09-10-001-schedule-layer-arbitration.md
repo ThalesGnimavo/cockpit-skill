@@ -54,3 +54,13 @@ la séquence `fleet`.
 Commit `3fdd282` : le prompt et le rechaînage de `demand-gated-tail` derrière lui. Bump d'état :
 `next_prompt` sur le nouveau prompt, `phases_queued` à deux entrées, arbitrage solo enregistré
 (un dépôt, une surface couplée, pas de second couloir d'écriture). Rien publié, rien poussé.
+
+## 5 · Amendement du même jour — l'état s'affiche en clôture
+
+Demande CEO : voir où en est le projet à la fin de chaque session, visuellement. Mesure :
+`casp close` n'imprime que le bump et le verdict, et aucun protocole de clôture ne demande
+l'état. Le prompt gagne trois éléments, tous dessinés à partir de comptes et de dates
+enregistrées, jamais d'une estimation : une ligne de progression des phases dans `casp status`,
+une ligne de temps dans `casp schedule`, et `casp close` qui termine sur ce tableau. Le « no
+rendering » du matin est resserré à ce qu'il visait : pas de page HTML, pas de Gantt, pas de
+tracker — le terminal dessine, le gate ne rend pas de page.
