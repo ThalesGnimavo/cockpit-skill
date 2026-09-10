@@ -45,7 +45,7 @@ it is measured live, every run.
   "first_commit": "8c42684", "first_date": "2026-07-18",
   "last_commit":  "555d590", "last_date":  "2026-09-10",
   "span_days": 54,
-  "phases_shipped_delta": 20,
+  "phases_shipped_delta": 20,   // a difference of LIST SIZES, not a ship count
   "phases_per_week": 2.59,
   "reason": null              // the sentence, when measurable is false
 }
@@ -61,8 +61,19 @@ Two properties worth relying on:
   whose last state commit is six months old has not been shipping at its old
   pace, and pinning the window to that commit would report as if it had.
 
+`phases_shipped_delta` is `last.length - first.length`, so a **rename** inside
+the window (one entry removed, one added) reads as zero and a window containing
+only renames reports "did not grow" rather than a rate. That is deliberate — the
+alternative is a rate computed from a set difference CASP cannot attribute — but
+it means the number is a floor on shipping events, not a count of them.
+`commits_in_window` likewise counts only commits whose `casp/state.json` blob
+parsed; an unparseable historical state is skipped silently.
+
+`--since` is **clamped**, never rejected: a value below 1 or above 5200 weeks
+falls back or clamps rather than exiting non-zero, because this verb reports.
+
 When fewer than two state commits fall in the window, when they all land on the
-same day, or when nothing shipped between them, `measurable` is `false`,
+same day, or when the count did not grow between them, `measurable` is `false`,
 `phases_per_week` is `null`, `derived` is `null`, and `reason` says which. **casp
 never invents a rate.**
 

@@ -53,7 +53,7 @@ const ASCII: Glyphs = {
   today: 'o'
 };
 
-export function glyphsFor(utf8: boolean): Glyphs {
+function glyphsFor(utf8: boolean): Glyphs {
   return utf8 ? UTF8 : ASCII;
 }
 
@@ -148,7 +148,10 @@ export function nextClaimLine(claims: ScheduleClaim[], utf8: boolean): string | 
   const pending = claims
     .filter((c) => c.list !== 'shipped')
     .sort((a, b) => a.date.localeCompare(b.date));
-  const ahead = pending.find((c) => c.days >= 0) ?? pending[0];
+  // The soonest claim not yet reached; when every claim has passed, the MOST
+  // RECENTLY passed one — showing a two-year-old anchor as "next" forever is
+  // technically true and useless.
+  const ahead = pending.find((c) => c.days >= 0) ?? pending[pending.length - 1];
   if (!ahead) return null;
   const when =
     ahead.days > 0

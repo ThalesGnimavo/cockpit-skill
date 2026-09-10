@@ -471,6 +471,73 @@ test('casp schedule on an unreadable cockpit exits 1; on a readable one always 0
   }
 });
 
+test('casp schedule --since is clamped, never a crash on a readable cockpit', () => {
+  const dir = scaffold();
+  try {
+    for (const since of ['99999999', '0', '-5', 'banana']) {
+      const r = run(dir, 'schedule', '--json', '--since', since);
+      assert.equal(r.status ?? 0, 0, `--since ${since} must not gate`);
+      assert.doesNotMatch(r.stderr, /casp bug/, `--since ${since} is a flag, not a bug report`);
+      const w = JSON.parse(r.stdout).pace.window_weeks;
+      assert.ok(w >= 1 && w <= 5200, `--since ${since} lands inside the clamp (got ${w})`);
+    }
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('the window bounds the WALK, not just the arithmetic', async () => {
+  const { sampleHistory } = await import('../dist/pace.js');
+  const iso0 = (daysAgo) =>
+    new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 19) + 'Z';
+  // The seed commit is old too, or it would sit inside the window and the test
+  // would be measuring the fixture instead of the bound.
+  const dir = scaffold({ commitDate: iso0(500) });
+  try {
+    const bump = (n, when) => {
+      const state = JSON.parse(
+        execFileSync('git', ['show', 'HEAD:casp/state.json'], { cwd: dir, encoding: 'utf8' })
+      );
+      state.phases_shipped = Array.from({ length: n }, (_, i) => `p${i}`);
+      writeFileSync(join(dir, 'casp', 'state.json'), JSON.stringify(state, null, 2) + '\n');
+      execFileSync('git', ['add', 'casp/state.json'], { cwd: dir, stdio: 'ignore' });
+      execFileSync('git', ['commit', '-q', '-m', 'bump', '--date', when], {
+        cwd: dir,
+        stdio: 'ignore',
+        env: { ...process.env, GIT_COMMITTER_DATE: when }
+      });
+    };
+    const iso = (daysAgo) =>
+      new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 19) + 'Z';
+    bump(2, iso(400));
+    bump(3, iso(300));
+    bump(4, iso(3));
+
+    // Reading a blob is one process spawn per commit. Unbounded, a two-year-old
+    // cockpit pays 400 of them on every `casp close`.
+    assert.equal(sampleHistory(dir).length, 4, 'unbounded, every state commit is read');
+    const bounded = sampleHistory(dir, { since: new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10) });
+    assert.equal(bounded.length, 1, 'bounded, only the in-window commit is read');
+  } finally {
+    cleanup(dir);
+  }
+});
+
+test('a rename inside the window is reported as "did not grow", never as "nothing shipped"', async () => {
+  const { measurePace } = await import('../dist/pace.js');
+  const pace = measurePace(
+    [
+      { sha: 'bbbbbbb', date: '2026-09-01', shipped: 3 },
+      { sha: 'aaaaaaa', date: '2026-08-18', shipped: 3 }
+    ],
+    '2026-09-10',
+    8
+  );
+  assert.equal(pace.measurable, false);
+  assert.match(pace.reason, /did not grow/);
+  assert.doesNotMatch(pace.reason, /no phase shipped/, 'a rename did ship a phase');
+});
+
 /* ---- status and close print the board --------------------------------- */
 
 test('casp status always draws the progress line, and the schedule line when adopted', () => {

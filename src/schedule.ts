@@ -71,15 +71,19 @@ export function daysBetween(from: string, to: string): number {
   );
 }
 
-/** `day` shifted by `n` days, as `YYYY-MM-DD`. */
+/** `day` shifted by `n` days, as `YYYY-MM-DD`. Throws a RangeError past the
+ *  representable date range — callers that take `n` from a CLI flag must bound
+ *  it first (see `windowCutoff` in src/pace.ts). */
 export function addDays(day: string, n: number): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 }
 
+/* Not exported: the only legitimate entry point is analyzeSchedule, which pairs
+   the parse with the "present but unusable" distinction check.ts depends on. */
 /** Parses casp/schedule.json. null on a missing/unreadable/unparseable file OR
  *  a shape that is not even minimally a schedule file (an object) — check.ts
  *  turns the last case into a single FAIL rather than silent adoption. */
-export function loadSchedule(path: string): ScheduleFile | null {
+function loadSchedule(path: string): ScheduleFile | null {
   const raw = readTextFile(path);
   if (!raw.ok) return null;
   try {
@@ -335,7 +339,13 @@ export function analyzeSchedule(
     }
   }
 
-  /* 004 — a date has passed. WARN, and the ONLY rule here that reads the clock. */
+  /* 004 — a date has passed. WARN, and the ONLY rule here that reads the clock.
+   *
+   * THIS BLOCK STAYS LAST, and the order is load-bearing. check.ts derives each
+   * finding's id from its INDEX in this array; emitting the clock-dependent rule
+   * after every clock-independent one is what keeps FAIL ids identical whatever
+   * the date. The clock-invariance test compares FAIL ids, so moving this block
+   * above 003 breaks the suite — which is the intent. */
   for (const d of dues) {
     const list = listOf(d.phase, lists);
     if (list !== 'queued' && list !== 'backlog') continue;

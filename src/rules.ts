@@ -326,7 +326,7 @@ export const RULES: Rule[] = [
     area: 'SCHEDULE',
     verifies:
       'When casp/schedule.json exists it is a JSON object whose anchors and due entries carry a non-empty id/phase, a YYYY-MM-DD date that is a real day, unique anchor ids, and a `before` naming a declared anchor. Opt-in: a cockpit with no schedule.json emits no CASP-SCHEDULE-* finding at all.',
-    evidence: 'casp/schedule.json on disk, compared against schemas/schedule.schema.json\'s structural contract.',
+    evidence: 'casp/schedule.json on disk, checked field by field by the validator in src/schedule.ts. schemas/schedule.schema.json publishes the same contract for editors and external tools; where the two differ the validator is the stricter one (it rejects a date like 2026-02-30, which the schema\'s pattern accepts).',
     remediation: 'Fix the field the message names, or remove the file to opt back out of the schedule layer.',
     matches: (id) => id === 'schedule.file' || id === 'schedule.valid'
   },

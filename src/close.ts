@@ -125,7 +125,9 @@ export async function runClose(args: string[]): Promise<void> {
   // renderer `casp status` and `casp schedule` use — a second one drifts from
   // the first, and then the close prints a different picture from the verb.
   //
-  // close still runs NO git: this is reading and printing, nothing else.
+  // close still runs no git WRITES — no add, no commit, no push, which is the
+  // hard constraint at the top of this file. It does read: `git rev-parse` above,
+  // and the pace walk inside printSchedule. The window bounds that walk.
   const findings = checkOneSafe(root);
   printReport(findings, false);
   runStatus([]);

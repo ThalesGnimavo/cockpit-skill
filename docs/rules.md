@@ -205,6 +205,11 @@ This is the boundary the layer was designed around, and two tests enforce it.
   mid-flight, and a rename must not stop a push.
 - **Shipped phases are never inspected** by `003` or `004`. History is not drift.
 
+"Today" is the **UTC** day, as it already is for `CASP-FACT-003`. West of UTC in
+the evening, a date can therefore read as passed a few hours early. It can only
+move a WARN — by construction nothing in this family can reach a FAIL — but it is
+worth knowing before arguing with the output.
+
 `CASP-FACT-003` also reads today's date, so "no clock in the gate" was never the
 doctrine. The doctrine is a deterministic comparison of a recorded claim against a
 defined evidence source; the calendar is one *when the user recorded the date*. What

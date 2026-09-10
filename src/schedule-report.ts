@@ -34,18 +34,30 @@ import {
   type State
 } from './shared.js';
 import { analyzeSchedule, phaseListsOf, type PhaseLists, type ScheduleAnalysis } from './schedule.js';
-import { deriveLength, measurePace, sampleHistory, DEFAULT_WINDOW_WEEKS, WALK_CAP, type Pace } from './pace.js';
+import {
+  deriveLength,
+  measurePace,
+  sampleHistory,
+  windowCutoff,
+  DEFAULT_WINDOW_WEEKS,
+  MAX_WINDOW_WEEKS,
+  WALK_CAP,
+  type Pace
+} from './pace.js';
 import { nextClaimLine, timelineLine } from './board.js';
 
 /** The stable `casp schedule --json` contract (docs/schedule-json.md). Bumps
  *  only on a breaking shape change; additive fields do not bump it. */
 export const SCHEDULE_SCHEMA_VERSION = 1;
 
+/** Clamped, never rejected: this verb reports, so a nonsense window falls back
+ *  to something printable rather than exiting non-zero on a readable cockpit. */
 function getWindow(args: string[]): number {
   const i = args.indexOf('--since');
   if (i === -1) return DEFAULT_WINDOW_WEEKS;
   const n = Number(args[i + 1]);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : DEFAULT_WINDOW_WEEKS;
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_WINDOW_WEEKS;
+  return Math.min(Math.floor(n), MAX_WINDOW_WEEKS);
 }
 
 function round(n: number, places = 2): number {
@@ -69,7 +81,14 @@ interface Assembled {
 export function assemble(root: string, state: State, today: string, windowWeeks: number): Assembled {
   const lists = phaseListsOf(state);
   const analysis = analyzeSchedule(join(root, 'casp', 'schedule.json'), lists, today);
-  const pace = measurePace(sampleHistory(root), today, windowWeeks);
+  // The window bounds the walk, not just the arithmetic: reading a blob costs a
+  // process spawn per commit, and `casp close` pays this on every session.
+  const cutoff = windowCutoff(today, windowWeeks);
+  const pace = measurePace(
+    sampleHistory(root, cutoff ? { since: cutoff } : {}),
+    today,
+    windowWeeks
+  );
   return { today, lists, analysis, pace, derived: deriveLength(lists.queued.length, pace, today) };
 }
 
