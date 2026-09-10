@@ -3,7 +3,7 @@ status: queued
 session_id: pending
 session_log: pending
 drafted_at: 2026-06-10
-next_after: PHASE-SITE-SCHEDULE-SURFACE
+next_after: PHASE-NPX-CACHE-TRAP
 ---
 
 # Session — demand-gated-tail : holding prompt (DO NOT EXECUTE without a signal)

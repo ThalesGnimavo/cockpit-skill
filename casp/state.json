@@ -1,16 +1,16 @@
 {
   "updated_at": "2026-09-10",
-  "last_session_id": "26-09-10-002-schedule-layer",
+  "last_session_id": "26-09-10-003-site-schedule-surface",
   "last_commit": "22982e0",
-  "current_phase": "schedule-layer",
-  "next_phase": "site-schedule-surface",
-  "next_prompt": "docs/plan/sessions/PHASE-SITE-SCHEDULE-SURFACE.md",
+  "current_phase": "site-schedule-surface",
+  "next_phase": "npx-cache-trap",
+  "next_prompt": "docs/plan/sessions/PHASE-NPX-CACHE-TRAP.md",
   "arbitration": {
-    "phase": "schedule-layer",
+    "phase": "npx-cache-trap",
     "shape": "solo",
     "decided_at": "2026-09-10",
-    "by": "26-09-10-001",
-    "reason": "one repository, one coupled surface (rules.ts, check.ts, schemas, tests) with no second writing lane; the arbitration of the three briefs is written before the first line of code, in the prompt itself"
+    "by": "26-09-10-003-site-schedule-surface",
+    "reason": "Une tranche étroite dans un seul fichier de règles et son test : aucun couloir d'écriture indépendant à découper."
   },
   "phases_shipped": [
     "0.1.0-initial-release",
@@ -53,13 +53,14 @@
     "unarmed-is-not-silent",
     "fleet-ships-with-casp",
     "queue-never-empty",
-    "schedule-layer"
+    "schedule-layer",
+    "site-schedule-surface"
   ],
   "phases_queued": [
-    "site-schedule-surface",
+    "npx-cache-trap",
     "demand-gated-tail"
   ],
   "phases_backlog": [],
-  "notes": "0.16.0 is PUBLISHED -- npm dist-tags.latest is 0.16.0, shasum 4c0555a4a8fd95e42d8b09292e351037b64eabbb, 42 files. What it ships: the fleet skill (skills/fleet/SKILL.md), a public rewrite distilled from three measured multi-session trials -- default shape one writer plus N adversarial read-only reviewers, the measured value is contradiction not speed, gates-isolable-per-session is a per-project property to measure before launching, commit by pathspec, stale belief is the dominant failure mode. The boundary is stated and mechanically tested: fleet launches sessions, therefore it orchestrates, therefore it is never a CASP feature; no casp check rule reads it; its model default is empty. Launcher decision: skill only, no launch script ships (reason in CHANGELOG). Wiring path claims into a launcher is RULED OUT on measurement (14 incidents: 1 caught, 2 false refusals) -- do not re-propose without a measurement that overturns that count. 222 -> 228 tests; test/fleet-skill.test.mjs enforces the acceptance greps so the rewrite cannot silently regress. The published tarball was verified from the registry, not from dist/. The head of the queue is demand-gated-tail, which ships on a real demand signal, not on a schedule: an untouched head is the intended state, not drift. | 2026-09-10 (26-09-10-001): schedule-layer queued as the head, arbitrated from three competing briefs and closed on four forks (clock at WARN never FAIL, separate opt-in casp/schedule.json, phase name as join key, a printer verb that prints the arithmetic). demand-gated-tail rechained behind it. No source touched; the implementation is the next session. Same day, CEO ask: the state must be displayed at every close. Prompt amended (d8a0a03): progress line in status, timeline line in schedule, casp close ends on the board; HTML/Gantt/tracker stay out of the gate. | 2026-09-10: 0.18.0 PUBLISHED -- dist-tags.latest 0.18.0, shasum 59be086a5b364c68984e79398a26e5160917bc5f, 50 files, verified from the registry; casp upgrade replayed on this cockpit, schedule.json not adopted here (adopting would mean inventing a release date). Head: site-schedule-surface, now unblocked.",
+  "notes": "site-schedule-surface shipped: casp.sh now describes the ninth rule area and the schedule verb in 18 languages, measured against the published 0.18.0 binary (35 rules, 9 areas) rather than from memory. The five-verb command deck stayed intact -- schedule is tooling ergonomics, not protocol canon. The site's recorded rule-count method was itself a false measurement: unpinned npx reused a cached 0.17.0 and returned 31 while the registry latest enforced 35, with every fact assertion passing. PHASE-NPX-CACHE-TRAP is queued from that measurement and PHASE-DEMAND-GATED-TAIL re-chained behind it, so the head stays movable while the tail stays gated on demand.",
   "casp_version": "0.18.0"
 }

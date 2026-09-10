@@ -1,7 +1,7 @@
 ---
-status: queued
-session_id: pending
-session_log: pending
+status: shipped
+session_id: 26-09-10-003-site-schedule-surface
+session_log: session-logs/26-09-10-003-site-schedule-surface.md
 drafted_at: 2026-09-10
 next_after: PHASE-SCHEDULE-LAYER
 ---
