@@ -156,3 +156,11 @@ sur un FAIL.
 
 `schedule-layer` livré. `next_prompt` pointe sur `PHASE-SITE-SCHEDULE-SURFACE` ;
 `PHASE-DEMAND-GATED-TAIL` a été re-chaîné derrière lui pour que la file reste un seul fil.
+
+**Publication (même jour, hors session d'implémentation).** `@justethales/casp@0.18.0` est
+publié : `dist-tags.latest` = `0.18.0`, shasum `59be086a5b364c68984e79398a26e5160917bc5f`,
+50 fichiers. L'artefact a été vérifié depuis le registre, pas depuis `dist/` : le tarball
+téléchargé contient `dist/schedule.js`, `dist/board.js`, les deux schémas et
+`templates/templates/schedule.json`. `casp upgrade` a été rejoué sur ce cockpit
+(`casp_version` → `0.18.0`, `casp/templates/schedule.json` déposé, `casp/schedule.json`
+absent — l'opt-in structurel tient).
