@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-09-05",
-  "last_session_id": "26-09-10-001-schedule-layer-arbitration",
-  "last_commit": "d8a0a03",
-  "current_phase": "queue-never-empty",
-  "next_phase": "schedule-layer",
-  "next_prompt": "docs/plan/sessions/PHASE-SCHEDULE-LAYER.md",
+  "updated_at": "2026-09-10",
+  "last_session_id": "26-09-10-002-schedule-layer",
+  "last_commit": "dba91bb",
+  "current_phase": "schedule-layer",
+  "next_phase": "site-schedule-surface",
+  "next_prompt": "docs/plan/sessions/PHASE-SITE-SCHEDULE-SURFACE.md",
   "arbitration": {
     "phase": "schedule-layer",
     "shape": "solo",
@@ -52,10 +52,11 @@
     "live-review-and-release",
     "unarmed-is-not-silent",
     "fleet-ships-with-casp",
-    "queue-never-empty"
+    "queue-never-empty",
+    "schedule-layer"
   ],
   "phases_queued": [
-    "schedule-layer",
+    "site-schedule-surface",
     "demand-gated-tail"
   ],
   "phases_backlog": [],

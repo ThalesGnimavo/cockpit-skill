@@ -1,7 +1,7 @@
 ---
-status: queued
-session_id: pending
-session_log: pending
+status: shipped
+session_id: 26-09-10-002-schedule-layer
+session_log: session-logs/26-09-10-002-schedule-layer.md
 drafted_at: 2026-09-10
 next_after: PHASE-QUEUE-NEVER-EMPTY
 ---

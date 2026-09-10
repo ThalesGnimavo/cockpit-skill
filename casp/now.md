@@ -8,21 +8,21 @@
 
 ## Current focus (1 sentence)
 
-**0.17.0 published — a finished roadmap is not a finished project.** `CASP-PROMPT-011` fails a cockpit that has shipped and reports nothing to start (exempt while nothing has shipped, so `init` stays green); the remedy is a **discussion prompt** — `casp new discussion --slug <slug>`, frontmatter `kind: discussion`, a session with the human whose deliverable is decisions (next roadmap, distribution, pricing, support) and the prompts they produce, no code; `casp next` announces the kind on stderr. Triggered the same day by `tap.ci` closing its last chantier on a null pointer that `check` called "genuinely parked". One rotted date-dependent test fixed on the way. 231/231 tests. Published to npm 2026-09-05 (`npm view @justethales/casp version` → 0.17.0).
+**0.18.0 built — a dated claim nobody confronts with the calendar goes false, not stale.** An opt-in `casp/schedule.json` (anchors + per-phase due dates, joined on the phase name) is verified by four new `CASP-SCHEDULE-*` rules in a ninth area, and `casp schedule` prints the pace **measured** from the history of `casp/state.json`, the derived length of the queue, the recorded claims and the contradictions. The boundary is mechanical, not editorial: a schedule that contradicts itself is a FAIL, a missed date is a WARN, and two tests pin it — severity, and that moving the clock a year changes no FAIL. `casp status` now draws a progress line on every run and `casp close` ends on the board. 231 → 251 tests, `casp check` = 0. **Not published**: the npm publish of 0.18.0 is a CEO act.
 
 ## Concrete next action if I have…
 
 ### 15 minutes
 
-Nothing owed — 0.16.0 is published (`dist-tags.latest` = 0.16.0, verified from the registry) and the site's `npm-published-version` fact is re-verified at 0.16.0. `casp status` to confirm the cockpit is quiet.
+`npm view @justethales/casp version` — if it still reads 0.17.0, the publish of 0.18.0 is owed and is the CEO's to make. Nothing else is owed from a core session.
 
 ### 1 hour
 
-Only if a demand signal for `demand-gated-tail` has appeared: read `PHASE-DEMAND-GATED-TAIL.md` and bring the signal to the sequencing decision. Otherwise nothing.
+Nothing in `casp-core`. The head of the queue is `PHASE-SITE-SCHEDULE-SURFACE`, which is a `casp-website` session and is **gated on the publish** — a site advertising a verb `npm install` cannot deliver is worse than a site one release behind.
 
 ### Half a day
 
-Nothing — the head of the queue is `demand-gated-tail`, which ships on a real demand signal, not on a schedule. A head that sits untouched is the intended state. Do not invent work to fill it.
+Once 0.18.0 is live on npm: run `PHASE-SITE-SCHEDULE-SURFACE`. It is mechanical propagation — the wording is already decided in `CHANGELOG.md`, `README.md` and `docs/rules.md`, and nothing is invented there. It ends drafted, not pushed: pushing `casp-website` deploys to production.
 
 ---
 

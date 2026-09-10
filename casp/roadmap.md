@@ -11,9 +11,12 @@
 
 | # | Item | Prompt | Status |
 |---|------|--------|--------|
-| 1 | **Facts layer** — opt-in `casp/facts.json` + six deterministic `CASP-FACT-001..006` rules (source hash, TTL, method provenance, static traps registry): prove a claim's **freshness**, never its truth. Answers a real 2026-07-20 incident (five costly stale claims on a production cockpit, all invisible to `casp check`). Zero LLM — the `casp lint` red line holds. | `docs/plan/sessions/PHASE-FACTS-LAYER.md` | queued |
+| 1 | **Site propagation for 0.18.0** — the ninth rule area, the `casp schedule` verb and the severity doctrine reach `casp.sh` in every language; the site's own `casp-rule-count` fact is re-verified against the binary. **Gated on the npm publish of 0.18.0**, which is a CEO act. | `docs/plan/sessions/PHASE-SITE-SCHEDULE-SURFACE.md` | queued |
 
-**Sequencing note (2026-07-21).** `upgrade-command` was moved ahead of `facts-layer` and shipped as 0.12.0. The 2026-07-20 argument for the reverse order — a demonstrated incident beats ergonomics — held only while `upgrade` was hypothetical. 0.11.0 made it concrete: it shipped a changed session-log template (the `phase:` frontmatter `CASP-SESSION-003` reads) that **no existing cockpit could receive**, because `init` refuses on an existing `casp/` and `--force` overwrites the operator's data. `facts-layer` would have stacked a second undeliverable scaffold (`casp/facts.json`) on top of the first.
+**Sequencing note (2026-09-10).** `schedule-layer` shipped as 0.18.0 and the site now describes
+eight rule areas where the binary enforces nine. A site that understates the product is a false
+claim of the same family the product refuses, so propagation heads the queue ahead of
+`demand-gated-tail`, which still waits on a real signal.
 
 If you reach for anything BELOW Next, stop and check why.
 
@@ -39,6 +42,7 @@ If you reach for anything BELOW Next, stop and check why.
 
 | Date | Commit | Title | Notes |
 |------|--------|-------|-------|
+| 2026-09-10 | `pending` | **0.18.0** — the schedule layer : opt-in `casp/schedule.json`, four `CASP-SCHEDULE-*` rules, the `casp schedule` verb, the board in `status` and `close` | 231 → 251 tests; the clock may add a WARN and may never add a FAIL, pinned by two tests; **not yet published to npm** |
 | 2026-09-05 | `d815b77` | **0.17.0** — `CASP-PROMPT-011` + the `kind: discussion` prompt : a finished roadmap is not a finished project | 231/231 tests; published 2026-09-05 |
 | 2026-07-21 | `9cfe9ef` | **0.12.0** — `casp upgrade` : non-destructive scaffold refresh + additive `casp_version` stamp + `doctor` staleness WARN | 118/118 tests; sequenced ahead of `facts-layer` because 0.11.0's template change was otherwise unadoptable; audit GO-WITH-FIXES, five fixes folded in; **not yet published to npm** |
 | 2026-07-21 | `0f67e23` | **0.11.0** — `CASP-SESSION-003` : shipped phases declared by a session log | 102/102 tests; first new drift category since rule codes; opt-in by declaration, derived adoption window, pre-adoption history exempt; **not yet published to npm** |
